@@ -85,6 +85,12 @@ public:
 	void setDecodeLanguageCodes(bool decode){ m_decodeCodes = decode; }
 
 	/**
+	 * @brief Return whether langauge codes are decoded in the UI.
+	 * @return Whether langauge codes are decoded in the UI.
+	 */
+	bool getDecodeLanguageCodes() const{ return m_decodeCodes; }
+
+	/**
 	 * @brief Add the specified word to the user dictionary
 	 * @param word The word to add to the dictionary
 	 */
@@ -110,11 +116,6 @@ public:
 	 */
 	QList<QString> getSpellingSuggestions(const QString& word) const;
 
-	/**
-	 * @brief Return whether langauge codes are decoded in the UI.
-	 * @return Whether langauge codes are decoded in the UI.
-	 */
-	bool decodeLanguageCodes() const{ return m_decodeCodes; }
 
 	/**
 	 * @brief Requests the list of languages available for spell checking.

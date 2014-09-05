@@ -198,7 +198,7 @@ void Checker::showContextMenu(QMenu* menu, const QPoint& pos, int wordPos)
 		QMenu* languagesMenu = new QMenu();
 		QActionGroup* actionGroup = new QActionGroup(languagesMenu);
 		foreach(const QString& lang, getLanguageList()){
-			QString text = decodeLanguageCodes() ? decodeLanguageCode(lang) : lang;
+			QString text = getDecodeLanguageCodes() ? decodeLanguageCode(lang) : lang;
 			QAction* action = new QAction(text, languagesMenu);
 			action->setData(lang);
 			action->setCheckable(true);

@@ -42,33 +42,21 @@ public:
 
 		QLabel* label = new QLabel("Type some text into the text box.\n"
 								   "Try misspelling some words. Then right click them.");
-		m_textEdit = new QTextEdit(this);
-		QCheckBox* check = new QCheckBox("Enable spelling");
-		check->setChecked(true);
+		QTextEdit* textEdit = new QTextEdit(this);
 
 		QWidget* widget = new QWidget(this);
 		setCentralWidget(widget);
 
 		QVBoxLayout* layout = new QVBoxLayout(widget);
 		layout->addWidget(label);
-		layout->addWidget(m_textEdit, 1);
-		layout->addWidget(check);
+		layout->addWidget(textEdit, 1);
 
-		m_checker = new QtSpell::TextEditChecker(this);
-		m_checker->setTextEdit(m_textEdit);
-		m_checker->setDecodeLanguageCodes(true);
+		QtSpell::TextEditChecker* checker = new QtSpell::TextEditChecker(this);
+		checker->setTextEdit(textEdit);
+		checker->setDecodeLanguageCodes(true);
+		checker->setShowCheckSpellingCheckbox(true);
 
-		connect(check, SIGNAL(clicked(bool)), this, SLOT(toggleSpelling(bool)));
 	}
-
-private slots:
-	void toggleSpelling(bool enable){
-		m_checker->setTextEdit(enable ? m_textEdit : 0);
-	}
-
-private:
-	QTextEdit* m_textEdit;
-	QtSpell::TextEditChecker* m_checker;
 };
 
 #endif // EXAMPLE_HPP

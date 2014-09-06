@@ -27,8 +27,11 @@ int main (int argc, char* argv[])
 	QApplication app(argc, argv);
 
 	QTranslator qtTranslator;
-	qtTranslator.load("QtSpell_" + QLocale::system().name(), QLibraryInfo::location(QLibraryInfo::TranslationsPath));
+	qtTranslator.load("qt_" + QLocale::system().name(), QLibraryInfo::location(QLibraryInfo::TranslationsPath));
 	QApplication::instance()->installTranslator(&qtTranslator);
+	QTranslator spellTranslator;
+	spellTranslator.load("QtSpell_" + QLocale::system().name(), QLibraryInfo::location(QLibraryInfo::TranslationsPath));
+	QApplication::instance()->installTranslator(&spellTranslator);
 
 	MainWindow window;
 	window.show();

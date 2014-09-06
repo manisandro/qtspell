@@ -41,7 +41,12 @@ static void dict_describe_cb(const char* const lang_tag,
 namespace QtSpell {
 
 Checker::Checker(QObject* parent)
-	: QObject(parent), m_speller(0), m_wordRegEx("^[A-Za-z0-9']+$"), m_decodeCodes(false)
+	: QObject(parent),
+	  m_speller(0),
+	  m_wordRegEx("^[A-Za-z0-9']+$"),
+	  m_decodeCodes(false),
+	  m_spellingCheckbox(false),
+	  m_spellingEnabled(true)
 {
 	// setLanguageInternal: setLanguage is virtual and cannot be called in the constructor
 	setLanguageInternal("");
@@ -101,7 +106,7 @@ void Checker::addWordToDictionary(const QString &word)
 
 bool Checker::checkWord(const QString &word) const
 {
-	if(!m_speller){
+	if(!m_speller || !m_spellingEnabled){
 		return true;
 	}
 	// Skip empty strings and single characters
@@ -155,8 +160,8 @@ QString Checker::decodeLanguageCode(const QString &lang)
 
 void Checker::showContextMenu(QMenu* menu, const QPoint& pos, int wordPos)
 {
-	if(m_speller){
-		QAction* insertPos = menu->actions().first();
+	QAction* insertPos = menu->actions().first();
+	if(m_speller && m_spellingEnabled){
 		QString word = getWord(wordPos);
 
 		if(!checkWord(word)) {
@@ -194,7 +199,15 @@ void Checker::showContextMenu(QMenu* menu, const QPoint& pos, int wordPos)
 			menu->insertAction(insertPos, ignoreAction);
 			menu->insertSeparator(insertPos);
 		}
-
+	}
+	if(m_spellingCheckbox){
+		QAction* action = new QAction(tr("Check spelling"), menu);
+		action->setCheckable(true);
+		action->setChecked(m_spellingEnabled);
+		connect(action, SIGNAL(toggled(bool)), this, SLOT(setSpellingEnabled(bool)));
+		menu->insertAction(insertPos, action);
+	}
+	if(m_speller && m_spellingEnabled){
 		QMenu* languagesMenu = new QMenu();
 		QActionGroup* actionGroup = new QActionGroup(languagesMenu);
 		foreach(const QString& lang, getLanguageList()){

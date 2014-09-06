@@ -91,6 +91,24 @@ public:
 	bool getDecodeLanguageCodes() const{ return m_decodeCodes; }
 
 	/**
+	 * @brief Set whether to display an "Check spelling" checkbox in the UI.
+	 * @param show Whether to display an "Check spelling" checkbox in the UI.
+	 */
+	void setShowCheckSpellingCheckbox(bool show) { m_spellingCheckbox = show; }
+
+	/**
+	 * @brief Return whether a "Check spelling" checkbox is displayed in the UI.
+	 * @return Whether a "Check spelling" checkbox is displayed in the UI.
+	 */
+	bool getShowCheckSpellingCheckbox() const{ return m_spellingCheckbox; }
+
+	/**
+	 * @brief Return whether spellchecking is performed.
+	 * @return Whether spellchecking is performed.
+	 */
+	bool getSpellingEnabled() const{ return m_spellingEnabled; }
+
+	/**
 	 * @brief Add the specified word to the user dictionary
 	 * @param word The word to add to the dictionary
 	 */
@@ -133,6 +151,13 @@ public:
 	 */
 	static QString decodeLanguageCode(const QString& lang);
 
+public slots:
+	/**
+	 * @brief Set whether spell checking should be performed.
+	 * @param enabled True if spell checking should be performed.
+	 */
+	void setSpellingEnabled(bool enabled) { m_spellingEnabled = enabled; checkSpelling(); }
+
 signals:
 	/**
 	 * @brief This signal is emitted when the user selects a new language from
@@ -154,6 +179,8 @@ private:
 	enchant::Dict* m_speller;
 	QString m_lang;
 	bool m_decodeCodes;
+	bool m_spellingCheckbox;
+	bool m_spellingEnabled;
 	QRegExp m_wordRegEx;
 
 	/**

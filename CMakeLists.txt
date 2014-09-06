@@ -2,12 +2,12 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8.11)
 
 # Project properties
 PROJECT(qtspell)
-SET(QTSPELL_VERSION 0.1.0)
+SET(QTSPELL_VERSION 0.2.0)
 
 
 # Soname, see http://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html
-SET(QTSPELL_LIB_VERSION 0.0.0)
-SET(QTSPELL_SO_VERSION 0)
+SET(QTSPELL_LIB_VERSION 1.0.0)
+SET(QTSPELL_SO_VERSION 1)
 
 
 # Variables

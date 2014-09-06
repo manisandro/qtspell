@@ -1,2 +1,7 @@
+qtspell 0.2.0 (Sep 06 2014):
+* Rename decodeLanguageCodes to getDecodeLanguageCodes
+* Allow to enable/disable spelling without attaching/detatching checker from widget
+* Add option to show a "Check Spelling" checkbox in the context menu
+
 qtspell 0.1.0 (Sep 03 2014):
  * First release

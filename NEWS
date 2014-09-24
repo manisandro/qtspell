@@ -1,3 +1,7 @@
+qtspell 0.2.1 (Sep 26 2014):
+* Fix incorrect behaviour when passing null pointer to setTextEdit
+* Fix spelling not correctly checked when pasting text and when editing in the middle of a word
+
 qtspell 0.2.0 (Sep 06 2014):
 * Rename decodeLanguageCodes to getDecodeLanguageCodes
 * Allow to enable/disable spelling without attaching/detatching checker from widget

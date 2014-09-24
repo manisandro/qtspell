@@ -2,7 +2,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8.11)
 
 # Project properties
 PROJECT(qtspell)
-SET(QTSPELL_VERSION 0.2.0)
+SET(QTSPELL_VERSION 0.2.1)
 
 
 # Soname, see http://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html

@@ -344,12 +344,12 @@ TextEditChecker::~TextEditChecker()
 
 void TextEditChecker::setTextEdit(QTextEdit* textEdit)
 {
-	setTextEdit(new TextEditProxyT<QTextEdit>(textEdit));
+	setTextEdit(textEdit ? new TextEditProxyT<QTextEdit>(textEdit) : reinterpret_cast<TextEditProxyT<QTextEdit>*>(0));
 }
 
 void TextEditChecker::setTextEdit(QPlainTextEdit* textEdit)
 {
-	setTextEdit(new TextEditProxyT<QPlainTextEdit>(textEdit));
+	setTextEdit(textEdit ? new TextEditProxyT<QPlainTextEdit>(textEdit) : reinterpret_cast<TextEditProxyT<QPlainTextEdit>*>(0));
 }
 
 void TextEditChecker::setTextEdit(TextEditProxy *textEdit)
@@ -380,7 +380,6 @@ void TextEditChecker::setTextEdit(TextEditProxy *textEdit)
 		m_textEdit->setContextMenuPolicy(Qt::CustomContextMenu);
 		checkSpelling();
 	}
-
 }
 
 void TextEditChecker::checkSpelling(int start, int end)

@@ -473,22 +473,15 @@ void TextEditChecker::slotDetachTextEdit()
 void TextEditChecker::slotCheckRange(int pos, int /*removed*/, int added)
 {
 	// Set default format on inserted text
-	QTextCursor tmp = m_textEdit->textCursor();
+	TextCursor tmp(m_textEdit->textCursor());
+	tmp.movePosition(QTextCursor::End, QTextCursor::KeepAnchor);
+	int endPos = qMin(tmp.position(), pos + added);
+
 	tmp.setPosition(pos);
-	tmp.setPosition(pos + added, QTextCursor::KeepAnchor);
+	tmp.moveWordStart();
+	tmp.setPosition(endPos, QTextCursor::KeepAnchor);
 	tmp.setCharFormat(QTextCharFormat());
-
-	// We are in a word if one (or both) of the previous and next characters is a word character
-	TextCursor cursor(m_textEdit->textCursor());
-	if(!cursor.isInsideWord()){
-		return;
-	}
-	cursor.setPosition(pos);
-	cursor.moveWordStart();
-	cursor.movePosition(QTextCursor::NextCharacter, QTextCursor::KeepAnchor, added);
-	cursor.moveWordEnd(QTextCursor::KeepAnchor);
-
-	checkSpelling(cursor.anchor(), cursor.position());
+	checkSpelling(tmp.anchor(), tmp.position());
 }
 
 } // QtSpell

@@ -22,6 +22,10 @@ checker.setLanguage("de_CH");
 QTextEdit textEdit = new QTextEdit();
 checker.setTextEdit(textEdit);
 ```
+If you wish to use `undo` and `redo` on a `Q{Plain}TextEdit` with an attached
+`QtSpell::TextEditChecker`, use `QtSpell::TextEditChecker::undo` and
+`QtSpell::TextEditChecker::redo`, since the corresponding `Q{Plain}TextEdit`
+methods do not work correctly when spell checking is enabled.
 
 ### Advanced
 `QtSpell::TextEditChecker` inherits from the abstract `QtSpell::Checker` class.

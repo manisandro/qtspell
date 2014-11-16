@@ -335,6 +335,8 @@ TextEditChecker::TextEditChecker(QObject* parent)
 {
 	m_textEdit = 0;
 	m_document = 0;
+	m_undoInProgress = false;
+	m_redoInProgress = false;
 }
 
 TextEditChecker::~TextEditChecker()
@@ -402,6 +404,7 @@ void TextEditChecker::checkSpelling(int start, int end)
 	QTextCharFormat defaultFmt;
 
 	TextCursor cursor(m_textEdit->textCursor());
+	cursor.beginEditBlock();
 	cursor.setPosition(start);
 	while(cursor.position() < end) {
 		cursor.moveWordEnd(QTextCursor::KeepAnchor);
@@ -418,6 +421,7 @@ void TextEditChecker::checkSpelling(int start, int end)
 			cursor.movePosition(QTextCursor::NextCharacter);
 		}
 	}
+	cursor.endEditBlock();
 
 	m_textEdit->document()->blockSignals(false);
 }
@@ -472,8 +476,19 @@ void TextEditChecker::slotDetachTextEdit()
 
 void TextEditChecker::slotCheckRange(int pos, int /*removed*/, int added)
 {
+	if(m_undoInProgress){
+		// If nothing was added or removed, the step was a format change, do another step
+		undo();
+		return;
+	}
+	if(m_redoInProgress){
+		// If nothing was added or removed, the step was a format change, do another step
+		redo();
+		return;
+	}
 	// Set default format on inserted text
 	TextCursor tmp(m_textEdit->textCursor());
+	tmp.beginEditBlock();
 	tmp.movePosition(QTextCursor::End, QTextCursor::KeepAnchor);
 	int endPos = qMin(tmp.position(), pos + added);
 
@@ -482,6 +497,26 @@ void TextEditChecker::slotCheckRange(int pos, int /*removed*/, int added)
 	tmp.setPosition(endPos, QTextCursor::KeepAnchor);
 	tmp.setCharFormat(QTextCharFormat());
 	checkSpelling(tmp.anchor(), tmp.position());
+	tmp.endEditBlock();
+}
+
+void TextEditChecker::undo()
+{
+	if(m_document->availableUndoSteps() > 0){
+		m_undoInProgress = true;
+		m_document->undo();
+		m_undoInProgress = false;
+	}
+}
+
+void TextEditChecker::redo()
+{
+	if(m_document->availableRedoSteps() > 0){
+		m_redoInProgress = true;
+		m_document->redo();
+		m_redoInProgress = false;
+	}
+
 }
 
 } // QtSpell

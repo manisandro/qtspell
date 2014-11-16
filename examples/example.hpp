@@ -30,6 +30,8 @@
 #include <QTextEdit>
 #include <QVBoxLayout>
 #include <QtSpell.hpp>
+#include <QDialogButtonBox>
+#include <QPushButton>
 
 class MainWindow : public QMainWindow
 {
@@ -43,6 +45,15 @@ public:
 		QLabel* label = new QLabel("Type some text into the text box.\n"
 								   "Try misspelling some words. Then right click them.");
 		QTextEdit* textEdit = new QTextEdit(this);
+		textEdit->setUndoRedoEnabled(true);
+
+		QDialogButtonBox* bbox = new QDialogButtonBox(this);
+
+		QPushButton* buttonUndo = bbox->addButton("Undo", QDialogButtonBox::ActionRole);
+		buttonUndo->setEnabled(false);
+
+		QPushButton* buttonRedo = bbox->addButton("Redo", QDialogButtonBox::ActionRole);
+		buttonRedo->setEnabled(false);
 
 		QWidget* widget = new QWidget(this);
 		setCentralWidget(widget);
@@ -50,12 +61,18 @@ public:
 		QVBoxLayout* layout = new QVBoxLayout(widget);
 		layout->addWidget(label);
 		layout->addWidget(textEdit, 1);
+		layout->addWidget(bbox);
+
 
 		QtSpell::TextEditChecker* checker = new QtSpell::TextEditChecker(this);
 		checker->setTextEdit(textEdit);
 		checker->setDecodeLanguageCodes(true);
 		checker->setShowCheckSpellingCheckbox(true);
 
+		connect(textEdit, SIGNAL(undoAvailable(bool)), buttonUndo, SLOT(setEnabled(bool)));
+		connect(textEdit, SIGNAL(redoAvailable(bool)), buttonRedo, SLOT(setEnabled(bool)));
+		connect(buttonUndo, SIGNAL(clicked()), checker, SLOT(undo()));
+		connect(buttonRedo, SIGNAL(clicked()), checker, SLOT(redo()));
 	}
 };
 

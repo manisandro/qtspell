@@ -243,10 +243,27 @@ public:
 
 	void checkSpelling(int start = 0, int end = -1);
 
+public slots:
+	/**
+	 * @brief Undo the last edit operation.
+	 * @note Use this function instead of Q(Plain)TextEdit::undo, since the
+	 *       latter does not work correctly together with spell checking.
+	 */
+
+	void undo();
+	/**
+	 * @brief Redo the last edit operation.
+	 * @note Use this function instead of Q(Plain)TextEdit::redo, since the
+	 *       latter does not work correctly together with spell checking.
+	 */
+	void redo();
+
 private:
 	TextEditProxy* m_textEdit;
 	QTextDocument* m_document;
 	Qt::ContextMenuPolicy m_oldContextMenuPolicy;
+	bool m_undoInProgress;
+	bool m_redoInProgress;
 
 	QString getWord(int pos, int* start = 0, int* end = 0) const;
 	void insertWord(int start, int end, const QString& word);

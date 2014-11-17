@@ -59,14 +59,11 @@ Checker::~Checker()
 
 bool Checker::setLanguage(const QString &lang)
 {
-	if(setLanguageInternal(lang))
-	{
-		if(isAttached()){
-			checkSpelling();
-		}
-		return true;
+	bool success = setLanguageInternal(lang);
+	if(isAttached()){
+		checkSpelling();
 	}
-	return false;
+	return success;
 }
 
 bool Checker::setLanguageInternal(const QString &lang)

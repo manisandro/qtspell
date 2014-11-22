@@ -1,3 +1,6 @@
+qtspell 0.4.0 (Nov 22 2014):
+* Windows support (through MinGW)
+
 qtspell 0.3.0 (Nov 17 2014):
 * Add TextEditChecker::undo and TextEditChecker::redo to be used instead of the
   corresponding Q{Plain}TextEdit methods, which do not work correctly when

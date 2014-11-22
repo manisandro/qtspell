@@ -19,6 +19,7 @@
 #ifndef CODETABLE_HPP
 #define CODETABLE_HPP
 
+#include <QDir>
 #include <QMap>
 #include <QString>
 
@@ -55,7 +56,7 @@ private:
 	QMap<QString, QString> m_countryTable;
 
 	Codetable();
-	void parse(const QString& basename, const parser_t& parser, QMap<QString, QString>& table);
+	void parse(const QDir& dataDir, const QString& basename, const parser_t& parser, QMap<QString, QString>& table);
 	static void parseIso3166Elements(const QXmlStreamReader& xml, QMap<QString, QString> & table);
 	static void parseIso639Elements(const QXmlStreamReader& xml, QMap<QString, QString> & table);
 };

@@ -17,6 +17,7 @@
  */
 
 #include "Codetable.hpp"
+#include <QCoreApplication>
 #include <QDir>
 #include <QFile>
 #include <QXmlStreamReader>
@@ -48,14 +49,20 @@ void Codetable::lookup(const QString &language_code, QString &language_name, QSt
 
 Codetable::Codetable()
 {
-	bindtextdomain (ISO_639_DOMAIN, ISO_CODES_PREFIX "/share/locale");
-	bind_textdomain_codeset (ISO_639_DOMAIN, "UTF-8");
+#ifdef Q_OS_WIN32
+	QDir dataDir = QDir(QString("%1/../share").arg(QCoreApplication::applicationDirPath()));
+#else
+	QDir dataDir = QDir(ISO_CODES_PREFIX "/share").absolutePath();
+#endif
 
-	bindtextdomain (ISO_3166_DOMAIN, ISO_CODES_PREFIX "/share/locale");
-	bind_textdomain_codeset (ISO_3166_DOMAIN, "UTF-8");
+	bindtextdomain(ISO_639_DOMAIN, dataDir.absoluteFilePath("locale").toLocal8Bit().data());
+	bind_textdomain_codeset(ISO_639_DOMAIN, "UTF-8");
 
-	parse("iso_639.xml", parseIso639Elements, m_languageTable);
-	parse("iso_3166.xml", parseIso3166Elements, m_countryTable);
+	bindtextdomain(ISO_3166_DOMAIN, dataDir.absoluteFilePath("locale").toLocal8Bit().data());
+	bind_textdomain_codeset(ISO_3166_DOMAIN, "UTF-8");
+
+	parse(dataDir, "iso_639.xml", parseIso639Elements, m_languageTable);
+	parse(dataDir, "iso_3166.xml", parseIso3166Elements, m_countryTable);
 }
 
 void Codetable::parseIso639Elements(const QXmlStreamReader &xml, QMap<QString, QString> &table)
@@ -82,9 +89,9 @@ void Codetable::parseIso3166Elements(const QXmlStreamReader &xml, QMap<QString, 
 	}
 }
 
-void Codetable::parse(const QString& basename, const parser_t& parser, QMap<QString, QString>& table)
+void Codetable::parse(const QDir& dataDir, const QString& basename, const parser_t& parser, QMap<QString, QString>& table)
 {
-	QString filename = QDir(ISO_CODES_PREFIX "/share/xml/iso-codes").absoluteFilePath(basename);
+	QString filename = QDir(QDir(dataDir.filePath("xml")).filePath("iso-codes")).absoluteFilePath(basename);
 	QFile file(filename);
 	if(!file.open(QIODevice::ReadOnly)){
 		qWarning("Failed to open %s for reading", file.fileName().toLatin1().data());

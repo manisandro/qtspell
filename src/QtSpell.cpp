@@ -43,10 +43,10 @@ namespace QtSpell {
 Checker::Checker(QObject* parent)
 	: QObject(parent),
 	  m_speller(0),
-	  m_wordRegEx("^[A-Za-z0-9']+$"),
 	  m_decodeCodes(false),
 	  m_spellingCheckbox(false),
-	  m_spellingEnabled(true)
+	  m_spellingEnabled(true),
+	  m_wordRegEx("^[A-Za-z0-9']+$")
 {
 	// setLanguageInternal: setLanguage is virtual and cannot be called in the constructor
 	setLanguageInternal("");

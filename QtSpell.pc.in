@@ -1,6 +1,6 @@
 prefix=@CMAKE_INSTALL_PREFIX@
-libdir=@LIB_INSTALL_DIR@
-includedir=@INCLUDE_INSTALL_DIR@/QtSpell-@QT_VER@
+libdir=${prefix}/@PC_LIB_DIR@
+includedir=${prefix}/@PC_INCLUDE_DIR@/QtSpell-@QT_VER@
 
 Name: qtspell
 Description: Spell checking for Qt text widgets.

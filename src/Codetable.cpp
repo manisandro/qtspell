@@ -37,7 +37,7 @@ Codetable* Codetable::instance()
 void Codetable::lookup(const QString &language_code, QString &language_name, QString &country_name) const
 {
 	QStringList parts = language_code.split("_");
-	if(!parts.size() == 2) {
+	if(parts.size() != 2) {
 		language_name = language_code;
 		country_name = "";
 		return;

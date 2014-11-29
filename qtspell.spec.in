@@ -47,6 +47,16 @@ The %{name}-qt5-devel package contains libraries and header files for
 developing applications that use %{name}-qt5.
 
 
+%package        qt5-translations
+Summary:        Translations for %{name}-qt5
+BuildArch:      noarch
+Requires:       %{name} = %{version}-%{release}
+Requires:       qt5-qttranslations
+
+%description    qt5-translations
+The %{name}-qt5-translations contains translations for %{name}-qt5.
+
+
 %package        doc
 Summary:        Developer documentation for %{name}
 BuildArch:      noarch
@@ -93,12 +103,14 @@ make doc
 %files qt5
 %doc COPYING
 %{_libdir}/libqtspell-qt5.so.*
-%{_qt5_translationdir}/QtSpell_*.qm
 
 %files qt5-devel
 %{_includedir}/QtSpell-qt5/
 %{_libdir}/libqtspell-qt5.so
 %{_libdir}/pkgconfig/QtSpell-qt5.pc
+
+%files qt5-translations
+%{_qt5_translationdir}/QtSpell_*.qm
 
 %files doc
 %doc COPYING

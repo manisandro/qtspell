@@ -211,6 +211,8 @@ private:
 ///////////////////////////////////////////////////////////////////////////////
 
 class TextEditProxy;
+class UndoRedoStack;
+
 /**
  * @brief Checker class for QTextEdit widgets.
  * @details Sample usage: @include example.hpp
@@ -243,27 +245,65 @@ public:
 
 	void checkSpelling(int start = 0, int end = -1);
 
+	/**
+	 * @brief Clears the undo/redo stack.
+	 * @note QtSpell::TextEditChecker reimplements the undo/redo functionality
+	 *       since the one provided by QTextDocument also tracks text format
+	 *       changes (i.e. underlining of spelling errors) which is undesirable.
+	 */
+	void clearUndoRedo();
+
+	/**
+	 * @brief Sets whether undo/redo functionality is enabled.
+	 * @param enabled Whether undo/redo is enabled.
+	 * @note QtSpell::TextEditChecker reimplements the undo/redo functionality
+	 *       since the one provided by QTextDocument also tracks text format
+	 *       changes (i.e. underlining of spelling errors) which is undesirable.
+	 */
+	void setUndoRedoEnabled(bool enabled);
+
 public slots:
 	/**
 	 * @brief Undo the last edit operation.
-	 * @note Use this function instead of Q(Plain)TextEdit::undo, since the
-	 *       latter does not work correctly together with spell checking.
+	 * @note QtSpell::TextEditChecker reimplements the undo/redo functionality
+	 *       since the one provided by QTextDocument also tracks text format
+	 *       changes (i.e. underlining of spelling errors) which is undesirable.
 	 */
 
 	void undo();
 	/**
 	 * @brief Redo the last edit operation.
-	 * @note Use this function instead of Q(Plain)TextEdit::redo, since the
-	 *       latter does not work correctly together with spell checking.
+	 * @note QtSpell::TextEditChecker reimplements the undo/redo functionality
+	 *       since the one provided by QTextDocument also tracks text format
+	 *       changes (i.e. underlining of spelling errors) which is undesirable.
 	 */
 	void redo();
+
+signals:
+	/**
+	 * @brief Emitted when the undo stack changes.
+	 * @param available Whether undo steps are available.
+	 * @note QtSpell::TextEditChecker reimplements the undo/redo functionality
+	 *       since the one provided by QTextDocument also tracks text format
+	 *       changes (i.e. underlining of spelling errors) which is undesirable.
+	 */
+	void undoAvailable(bool available);
+
+	/**
+	 * @brief Emitted when the redo stak changes.
+	 * @param available Whether redo steps are available.
+	 * @note QtSpell::TextEditChecker reimplements the undo/redo functionality
+	 *       since the one provided by QTextDocument also tracks text format
+	 *       changes (i.e. underlining of spelling errors) which is undesirable.
+	 */
+	void redoAvailable(bool available);
 
 private:
 	TextEditProxy* m_textEdit;
 	QTextDocument* m_document;
+	UndoRedoStack* m_undoRedoStack;
+	bool m_undoRedoInProgress;
 	Qt::ContextMenuPolicy m_oldContextMenuPolicy;
-	bool m_undoInProgress;
-	bool m_redoInProgress;
 
 	QString getWord(int pos, int* start = 0, int* end = 0) const;
 	void insertWord(int start, int end, const QString& word);

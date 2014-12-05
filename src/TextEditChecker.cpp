@@ -17,253 +17,14 @@
  */
 
 #include "QtSpell.hpp"
-#include "QtSpell_p.hpp"
-#include "Codetable.hpp"
+#include "TextEditChecker_p.hpp"
+#include "UndoRedoStack.hpp"
 
-#include <enchant++.h>
-#include <QContextMenuEvent>
 #include <QDebug>
-#include <QLocale>
-#include <QMenu>
 #include <QPlainTextEdit>
 #include <QTextEdit>
 
-static void dict_describe_cb(const char* const lang_tag,
-							 const char* const /*provider_name*/,
-							 const char* const /*provider_desc*/,
-							 const char* const /*provider_file*/,
-							 void* user_data)
-{
-	QList<QString>* languages = static_cast<QList<QString>*>(user_data);
-	languages->append(lang_tag);
-}
-
 namespace QtSpell {
-
-Checker::Checker(QObject* parent)
-	: QObject(parent),
-	  m_speller(0),
-	  m_decodeCodes(false),
-	  m_spellingCheckbox(false),
-	  m_spellingEnabled(true),
-	  m_wordRegEx("^[A-Za-z0-9']+$")
-{
-	// setLanguageInternal: setLanguage is virtual and cannot be called in the constructor
-	setLanguageInternal("");
-}
-
-Checker::~Checker()
-{
-	delete m_speller;
-}
-
-bool Checker::setLanguage(const QString &lang)
-{
-	bool success = setLanguageInternal(lang);
-	if(isAttached()){
-		checkSpelling();
-	}
-	return success;
-}
-
-bool Checker::setLanguageInternal(const QString &lang)
-{
-	delete m_speller;
-	m_speller = 0;
-	m_lang = lang;
-
-	// Determine language from system locale
-	if(m_lang.isEmpty()){
-		m_lang = QLocale::system().name();
-		if(m_lang.toLower() == "c" || m_lang.isEmpty()){
-			qWarning("Cannot use system locale %s", m_lang.toLatin1().data());
-			m_lang = QString::null;
-			return false;
-		}
-	}
-
-	// Request dictionary
-	try {
-		m_speller = enchant::Broker::instance()->request_dict(m_lang.toStdString());
-	} catch(enchant::Exception& e) {
-		qWarning("Failed to load dictionary: %s", e.what());
-		m_lang = QString::null;
-		return false;
-	}
-
-	return true;
-}
-
-void Checker::addWordToDictionary(const QString &word)
-{
-	if(m_speller){
-		m_speller->add(word.toUtf8().data());
-	}
-}
-
-bool Checker::checkWord(const QString &word) const
-{
-	if(!m_speller || !m_spellingEnabled){
-		return true;
-	}
-	// Skip empty strings and single characters
-	if(word.length() < 2){
-		return true;
-	}
-	// Don't check non-word blocks
-	if(!word.contains(m_wordRegEx)){
-		return true;
-	}
-	return m_speller->check(word.toUtf8().data());
-}
-
-void Checker::ignoreWord(const QString &word) const
-{
-	m_speller->add_to_session(word.toUtf8().data());
-}
-
-QList<QString> Checker::getSpellingSuggestions(const QString& word) const
-{
-	QList<QString> list;
-	if(m_speller){
-		std::vector<std::string> suggestions;
-		m_speller->suggest(word.toUtf8().data(), suggestions);
-		for(std::size_t i = 0, n = suggestions.size(); i < n; ++i){
-			list.append(QString::fromStdString(suggestions[i]));
-		}
-	}
-	return list;
-}
-
-QList<QString> Checker::getLanguageList()
-{
-	enchant::Broker* broker = enchant::Broker::instance();
-	QList<QString> languages;
-	broker->list_dicts(dict_describe_cb, &languages);
-	qSort(languages);
-	return languages;
-}
-
-QString Checker::decodeLanguageCode(const QString &lang)
-{
-	QString language, country;
-	Codetable::instance()->lookup(lang, language, country);
-	if(!country.isEmpty()){
-		return QString("%1 (%2)").arg(language, country);
-	}else{
-		return language;
-	}
-}
-
-void Checker::showContextMenu(QMenu* menu, const QPoint& pos, int wordPos)
-{
-	QAction* insertPos = menu->actions().first();
-	if(m_speller && m_spellingEnabled){
-		QString word = getWord(wordPos);
-
-		if(!checkWord(word)) {
-			QList<QString> suggestions = getSpellingSuggestions(word);
-			if(!suggestions.isEmpty()){
-				for(int i = 0, n = qMin(10, suggestions.length()); i < n; ++i){
-					QAction* action = new QAction(suggestions[i], menu);
-					action->setData(wordPos);
-					connect(action, SIGNAL(triggered()), this, SLOT(slotReplaceWord()));
-					menu->insertAction(insertPos, action);
-				}
-				if(suggestions.length() > 10) {
-					QMenu* moreMenu = new QMenu();
-					for(int i = 10, n = suggestions.length(); i < n; ++i){
-						QAction* action = new QAction(suggestions[i], moreMenu);
-						action->setData(wordPos);
-						connect(action, SIGNAL(triggered()), this, SLOT(slotReplaceWord()));
-						moreMenu->addAction(action);
-					}
-					QAction* action = new QAction(tr("More..."), menu);
-					menu->insertAction(insertPos, action);
-					action->setMenu(moreMenu);
-				}
-				menu->insertSeparator(insertPos);
-			}
-
-			QAction* addAction = new QAction(tr("Add \"%1\" to dictionary").arg(word), menu);
-			addAction->setData(wordPos);
-			connect(addAction, SIGNAL(triggered()), this, SLOT(slotAddWord()));
-			menu->insertAction(insertPos, addAction);
-
-			QAction* ignoreAction = new QAction(tr("Ignore \"%1\"").arg(word), menu);
-			ignoreAction->setData(wordPos);
-			connect(ignoreAction, SIGNAL(triggered()), this, SLOT(slotIgnoreWord()));
-			menu->insertAction(insertPos, ignoreAction);
-			menu->insertSeparator(insertPos);
-		}
-	}
-	if(m_spellingCheckbox){
-		QAction* action = new QAction(tr("Check spelling"), menu);
-		action->setCheckable(true);
-		action->setChecked(m_spellingEnabled);
-		connect(action, SIGNAL(toggled(bool)), this, SLOT(setSpellingEnabled(bool)));
-		menu->insertAction(insertPos, action);
-	}
-	if(m_speller && m_spellingEnabled){
-		QMenu* languagesMenu = new QMenu();
-		QActionGroup* actionGroup = new QActionGroup(languagesMenu);
-		foreach(const QString& lang, getLanguageList()){
-			QString text = getDecodeLanguageCodes() ? decodeLanguageCode(lang) : lang;
-			QAction* action = new QAction(text, languagesMenu);
-			action->setData(lang);
-			action->setCheckable(true);
-			action->setChecked(lang == getLanguage());
-			connect(action, SIGNAL(triggered(bool)), this, SLOT(slotSetLanguage(bool)));
-			languagesMenu->addAction(action);
-			actionGroup->addAction(action);
-		}
-		QAction* langsAction = new QAction(tr("Languages"), menu);
-		langsAction->setMenu(languagesMenu);
-		menu->insertAction(insertPos, langsAction);
-		menu->insertSeparator(insertPos);
-	}
-
-	menu->exec(pos);
-	delete menu;
-}
-
-void Checker::slotAddWord()
-{
-	int wordPos = qobject_cast<QAction*>(QObject::sender())->data().toInt();
-	int start, end;
-	addWordToDictionary(getWord(wordPos, &start, &end));
-	checkSpelling(start, end);
-}
-
-void Checker::slotIgnoreWord()
-{
-	int wordPos = qobject_cast<QAction*>(QObject::sender())->data().toInt();
-	int start, end;
-	ignoreWord(getWord(wordPos, &start, &end));
-	checkSpelling(start, end);
-}
-
-void Checker::slotReplaceWord()
-{
-	int wordPos = qobject_cast<QAction*>(QObject::sender())->data().toInt();
-	int start, end;
-	getWord(wordPos, &start, &end);
-	insertWord(start, end, qobject_cast<QAction*>(QObject::sender())->text());
-}
-
-void Checker::slotSetLanguage(bool checked)
-{
-	if(checked) {
-		QAction* action = qobject_cast<QAction*>(QObject::sender());
-		QString lang = action->data().toString();
-		if(!setLanguage(lang)){
-			action->setChecked(false);
-			lang = "";
-		}
-		emit languageChanged(lang);
-	}
-}
-///////////////////////////////////////////////////////////////////////////////
 
 QString TextCursor::nextChar(int num) const
 {
@@ -332,8 +93,8 @@ TextEditChecker::TextEditChecker(QObject* parent)
 {
 	m_textEdit = 0;
 	m_document = 0;
-	m_undoInProgress = false;
-	m_redoInProgress = false;
+	m_undoRedoStack = 0;
+	m_undoRedoInProgress = false;
 }
 
 TextEditChecker::~TextEditChecker()
@@ -366,6 +127,8 @@ void TextEditChecker::setTextEdit(TextEditProxy *textEdit)
 		cursor.movePosition(QTextCursor::End, QTextCursor::KeepAnchor);
 		cursor.setCharFormat(QTextCharFormat());
 	}
+	bool undoWasEnabled = m_undoRedoStack != 0;
+	setUndoRedoEnabled(false);
 	delete m_textEdit;
 	m_document = 0;
 	m_textEdit = textEdit;
@@ -376,6 +139,7 @@ void TextEditChecker::setTextEdit(TextEditProxy *textEdit)
 		connect(m_textEdit->object(), SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(slotShowContextMenu(QPoint)));
 		connect(m_textEdit->document(), SIGNAL(contentsChange(int,int,int)), this, SLOT(slotCheckRange(int,int,int)));
 		m_oldContextMenuPolicy = m_textEdit->contextMenuPolicy();
+		setUndoRedoEnabled(undoWasEnabled);
 		m_textEdit->setContextMenuPolicy(Qt::CustomContextMenu);
 		checkSpelling();
 	}
@@ -423,6 +187,30 @@ void TextEditChecker::checkSpelling(int start, int end)
 	m_textEdit->document()->blockSignals(false);
 }
 
+void TextEditChecker::clearUndoRedo()
+{
+	if(m_undoRedoStack){
+		m_undoRedoStack->clear();
+	}
+}
+
+void TextEditChecker::setUndoRedoEnabled(bool enabled)
+{
+	if(enabled == (m_undoRedoStack != 0)){
+		return;
+	}
+	if(!enabled){
+		delete m_undoRedoStack;
+		m_undoRedoStack = 0;
+		emit undoAvailable(false);
+		emit redoAvailable(false);
+	}else{
+		m_undoRedoStack = new UndoRedoStack(m_textEdit);
+		connect(m_undoRedoStack, SIGNAL(undoAvailable(bool)), this, SIGNAL(undoAvailable(bool)));
+		connect(m_undoRedoStack, SIGNAL(redoAvailable(bool)), this, SIGNAL(redoAvailable(bool)));
+	}
+}
+
 QString TextEditChecker::getWord(int pos, int* start, int* end) const
 {
 	TextCursor cursor(m_textEdit->textCursor());
@@ -455,11 +243,14 @@ void TextEditChecker::slotShowContextMenu(const QPoint &pos)
 void TextEditChecker::slotCheckDocumentChanged()
 {
 	if(m_document != m_textEdit->document()) {
+		bool undoWasEnabled = m_undoRedoStack != 0;
+		setUndoRedoEnabled(false);
 		if(m_document){
 			disconnect(m_document, SIGNAL(contentsChange(int,int,int)), this, SLOT(slotCheckRange(int,int,int)));
 		}
 		m_document = m_textEdit->document();
 		connect(m_document, SIGNAL(contentsChange(int,int,int)), this, SLOT(slotCheckRange(int,int,int)));
+		setUndoRedoEnabled(undoWasEnabled);
 	}
 }
 
@@ -469,20 +260,19 @@ void TextEditChecker::slotDetachTextEdit()
 	delete m_textEdit;
 	m_textEdit = 0;
 	m_document = 0;
+	setUndoRedoEnabled(false);
 }
 
-void TextEditChecker::slotCheckRange(int pos, int /*removed*/, int added)
+void TextEditChecker::slotCheckRange(int pos, int removed, int added)
 {
-	if(m_undoInProgress){
-		// If nothing was added or removed, the step was a format change, do another step
-		undo();
+	if(m_undoRedoInProgress){
 		return;
 	}
-	if(m_redoInProgress){
-		// If nothing was added or removed, the step was a format change, do another step
-		redo();
-		return;
+
+	if(m_undoRedoStack != 0){
+		m_undoRedoStack->handleContentsChange(pos, removed, added);
 	}
+
 	// Set default format on inserted text
 	TextCursor tmp(m_textEdit->textCursor());
 	tmp.beginEditBlock();
@@ -499,19 +289,19 @@ void TextEditChecker::slotCheckRange(int pos, int /*removed*/, int added)
 
 void TextEditChecker::undo()
 {
-	if(m_document->availableUndoSteps() > 0){
-		m_undoInProgress = true;
-		m_document->undo();
-		m_undoInProgress = false;
+	if(m_undoRedoStack != 0){
+		m_undoRedoInProgress = true;
+		m_undoRedoStack->undo();
+		m_undoRedoInProgress = false;
 	}
 }
 
 void TextEditChecker::redo()
 {
-	if(m_document->availableRedoSteps() > 0){
-		m_redoInProgress = true;
-		m_document->redo();
-		m_redoInProgress = false;
+	if(m_undoRedoStack != 0){
+		m_undoRedoInProgress = true;
+		m_undoRedoStack->redo();
+		m_undoRedoInProgress = false;
 	}
 
 }

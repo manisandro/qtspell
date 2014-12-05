@@ -65,15 +65,17 @@ FIND_PACKAGE(Doxygen)
 
 
 # Library
-SET(qtspell_SRCS src/QtSpell.cpp src/Codetable.cpp)
-SET(qtspell_HDRS src/QtSpell_p.hpp)
-SET(qtspell_MOC_HDRS src/QtSpell.hpp)
+SET(qtspell_SRCS src/Checker.cpp src/Codetable.cpp src/TextEditChecker.cpp src/UndoRedoStack.cpp)
+SET(qtspell_HDRS src/TextEditChecker_p.hpp)
+SET(qtspell_MOC_HDRS src/QtSpell.hpp src/UndoRedoStack.hpp)
 FILE(GLOB qtspell_TS locale/*.ts)
 
 ADD_DEFINITIONS(-DQTSPELL_LIBRARY)
+
+STRING(TOLOWER "${CMAKE_BUILD_TYPE}" CMAKE_BUILD_TYPE_TOLOWER)
 IF(NOT CMAKE_BUILD_TYPE_TOLOWER MATCHES "debug")
     ADD_DEFINITIONS(-DQT_NO_DEBUG_OUTPUT)
-ENDIF(NOT CMAKE_BUILD_TYPE_TOLOWER MATCHES "debug")
+ENDIF()
 
 IF(Qt4_FOUND)
     SET(QT_VER "qt4")
@@ -82,7 +84,7 @@ IF(Qt4_FOUND)
 
     QT4_WRAP_CPP(qtspell-qt4_MOC ${qtspell_MOC_HDRS})
 
-    ADD_LIBRARY(qtspell-qt4 SHARED ${qtspell_SRCS} ${qtspell-qt4_MOC} ${qtspell_HDRS} ${qtspell-qt4_QM})
+    ADD_LIBRARY(qtspell-qt4 SHARED ${qtspell_SRCS} ${qtspell-qt4_MOC} ${qtspell_HDRS} ${qtspell_MOC_HDRS} ${qtspell-qt4_QM})
     QT4_USE_MODULES(qtspell-qt4 Core Gui)
     SET_TARGET_PROPERTIES(qtspell-qt4 PROPERTIES COMPILE_DEFINITIONS "ISO_CODES_PREFIX=\"${ISO_CODES_PREFIX}\"")
     SET_TARGET_PROPERTIES(qtspell-qt4 PROPERTIES VERSION ${QTSPELL_LIB_VERSION} SOVERSION ${QTSPELL_SO_VERSION})
@@ -92,7 +94,7 @@ IF(Qt4_FOUND)
     TARGET_LINK_LIBRARIES(qtspell-qt4 ${ENCHANT_LDFLAGS})
 
     IF(${BUILD_STATIC_LIBS})
-        ADD_LIBRARY(qtspell-qt4-static STATIC ${qtspell_SRCS} ${qtspell-qt4_MOC} ${qtspell_HDRS} ${qtspell-qt4_QM})
+        ADD_LIBRARY(qtspell-qt4-static STATIC ${qtspell_SRCS} ${qtspell-qt4_MOC} ${qtspell_HDRS} ${qtspell_MOC_HDRS} ${qtspell-qt4_QM})
         QT4_USE_MODULES(qtspell-qt4-static Core Gui)
         SET_TARGET_PROPERTIES(qtspell-qt4-static PROPERTIES COMPILE_DEFINITIONS "ISO_CODES_PREFIX=\"${ISO_CODES_PREFIX}\"")
         SET_TARGET_PROPERTIES(qtspell-qt4-static PROPERTIES VERSION ${QTSPELL_LIB_VERSION} SOVERSION ${QTSPELL_SO_VERSION})
@@ -187,10 +189,12 @@ add_custom_target(doc
 ENDIF(DOXYGEN_FOUND)
 
 
-# Spec file
+# spec and debian changelog
 set(ENV{LC_ALL} "C")
 EXECUTE_PROCESS(COMMAND date +%a\ %b\ %d\ %Y OUTPUT_VARIABLE SPEC_DATE OUTPUT_STRIP_TRAILING_WHITESPACE)
+EXECUTE_PROCESS(COMMAND date -R OUTPUT_VARIABLE PACKAGE_RFC_DATE OUTPUT_STRIP_TRAILING_WHITESPACE)
 CONFIGURE_FILE(qtspell.spec.in qtspell.spec @ONLY)
+CONFIGURE_FILE(debian/changelog.in debian/changelog @ONLY)
 
 # Dist
 ADD_CUSTOM_TARGET(dist

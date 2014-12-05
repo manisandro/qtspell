@@ -16,10 +16,12 @@
  *    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef QTSPELL_P_HPP
-#define QTSPELL_P_HPP
+#ifndef QTSPELL_TEXTEDITCHECKER_P_HPP
+#define QTSPELL_TEXTEDITCHECKER_P_HPP
 
 #include <QTextCursor>
+
+class QMenu;
 
 namespace QtSpell {
 
@@ -97,6 +99,7 @@ public:
 	virtual QMenu* createStandardContextMenu() = 0;
 	virtual QTextCursor cursorForPosition(const QPoint& pos) const = 0;
 	virtual void setContextMenuPolicy(Qt::ContextMenuPolicy policy) = 0;
+	virtual void setTextCursor(const QTextCursor& cursor) = 0;
 	virtual Qt::ContextMenuPolicy contextMenuPolicy() const = 0;
 	virtual QObject* object() = 0;
 };
@@ -111,6 +114,7 @@ public:
 	QMenu* createStandardContextMenu(){ return m_textEdit->createStandardContextMenu(); }
 	QTextCursor cursorForPosition(const QPoint& pos) const{ return m_textEdit->cursorForPosition(pos); }
 	void setContextMenuPolicy(Qt::ContextMenuPolicy policy){ m_textEdit->setContextMenuPolicy(policy); }
+	void setTextCursor(const QTextCursor& cursor){ m_textEdit->setTextCursor(cursor); }
 	Qt::ContextMenuPolicy contextMenuPolicy() const{ return m_textEdit->contextMenuPolicy(); }
 	QObject* object(){ return m_textEdit; }
 
@@ -120,4 +124,4 @@ private:
 
 } // QtSpell
 
-#endif // QTSPELL_P_HPP
+#endif // QTSPELL_TEXTEDITCHECKER_P_HPP

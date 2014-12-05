@@ -16,8 +16,8 @@
  *    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef CODETABLE_HPP
-#define CODETABLE_HPP
+#ifndef QTSPELL_CODETABLE_HPP
+#define QTSPELL_CODETABLE_HPP
 
 #include <QDir>
 #include <QMap>
@@ -63,4 +63,4 @@ private:
 
 } // QtSpell
 
-#endif // CODETABLE_HPP
+#endif // QTSPELL_CODETABLE_HPP

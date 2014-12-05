@@ -45,7 +45,6 @@ public:
 		QLabel* label = new QLabel("Type some text into the text box.\n"
 								   "Try misspelling some words. Then right click them.");
 		QTextEdit* textEdit = new QTextEdit(this);
-		textEdit->setUndoRedoEnabled(true);
 
 		QDialogButtonBox* bbox = new QDialogButtonBox(this);
 
@@ -68,9 +67,10 @@ public:
 		checker->setTextEdit(textEdit);
 		checker->setDecodeLanguageCodes(true);
 		checker->setShowCheckSpellingCheckbox(true);
+		checker->setUndoRedoEnabled(true);
 
-		connect(textEdit, SIGNAL(undoAvailable(bool)), buttonUndo, SLOT(setEnabled(bool)));
-		connect(textEdit, SIGNAL(redoAvailable(bool)), buttonRedo, SLOT(setEnabled(bool)));
+		connect(checker, SIGNAL(undoAvailable(bool)), buttonUndo, SLOT(setEnabled(bool)));
+		connect(checker, SIGNAL(redoAvailable(bool)), buttonRedo, SLOT(setEnabled(bool)));
 		connect(buttonUndo, SIGNAL(clicked()), checker, SLOT(undo()));
 		connect(buttonRedo, SIGNAL(clicked()), checker, SLOT(redo()));
 	}

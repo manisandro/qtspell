@@ -5,9 +5,11 @@ PROJECT(qtspell)
 SET(QTSPELL_VERSION 0.4.0)
 
 
-# Soname, see http://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html
-SET(QTSPELL_LIB_VERSION 2.0.1)
-SET(QTSPELL_SO_VERSION 1)
+# Soname
+# MAJOR is incremented when symbols are removed or changed in an incompatible way
+# MINOR is incremented when new symbols are added
+SET(QTSPELL_MAJOR 0)
+SET(QTSPELL_MINOR 2)
 
 
 # Variables
@@ -15,29 +17,10 @@ SET(LIB_INSTALL_DIR lib${LIB_SUFFIX} CACHE PATH "Library installation dir")
 SET(INCLUDE_INSTALL_DIR include CACHE PATH "Header installation dir")
 SET(ISO_CODES_PREFIX ${CMAKE_INSTALL_PREFIX} CACHE PATH "Prefix for the iso-codes package")
 SET(BUILD_STATIC_LIBS OFF CACHE BOOL "Whether to also build static libs")
-SET(DISABLE_QT4 OFF CACHE PATH "Disable Qt4 build")
-SET(DISABLE_QT5 OFF CACHE PATH "Disable Qt5 build")
+SET(USE_QT5 OFF CACHE PATH "Do the Qt5 build")
 
 STRING(REGEX REPLACE "^${CMAKE_INSTALL_PREFIX}/" "" PC_INCLUDE_DIR ${INCLUDE_INSTALL_DIR})
 STRING(REGEX REPLACE "^${CMAKE_INSTALL_PREFIX}/" "" PC_LIB_DIR ${LIB_INSTALL_DIR} )
-
-
-# Macros
-FUNCTION(ADD_TRANSLATION _qm_files _lrelease_executable)
-    FOREACH(_current_FILE ${ARGN})
-        GET_FILENAME_COMPONENT(_abs_FILE ${_current_FILE} ABSOLUTE)
-        GET_FILENAME_COMPONENT(qm ${_abs_FILE} NAME_WE)
-        FILE(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/qm-${QT_VER}")
-        SET(qm "${CMAKE_CURRENT_BINARY_DIR}/qm-${QT_VER}/${qm}.qm")
-        ADD_CUSTOM_COMMAND(OUTPUT ${qm}
-            COMMAND ${_lrelease_executable}
-            ARGS ${_abs_FILE} -qm ${qm}
-            DEPENDS ${_abs_FILE} VERBATIM
-        )
-        LIST(APPEND ${_qm_files} ${qm})
-    ENDFOREACH()
-    SET(${_qm_files} ${${_qm_files}} PARENT_SCOPE)
-ENDFUNCTION(ADD_TRANSLATION)
 
 
 # Dependencies
@@ -45,21 +28,12 @@ FIND_PACKAGE(PkgConfig)
 PKG_CHECK_MODULES(ENCHANT REQUIRED enchant)
 INCLUDE_DIRECTORIES(${ENCHANT_INCLUDE_DIRS})
 
-IF(NOT DISABLE_QT4)
-    FIND_PACKAGE(Qt4)
-ENDIF(NOT DISABLE_QT4)
-IF(NOT DISABLE_QT5)
-    FIND_PACKAGE(Qt5Widgets)
-ENDIF(NOT DISABLE_QT5)
-
-IF(NOT Qt4_FOUND AND NOT Qt5Widgets_FOUND)
-    message(FATAL_ERROR "Cannot locate neither qt4 nor qt5 development files." )
-ENDIF(NOT Qt4_FOUND AND NOT Qt5Widgets_FOUND)
-
-IF(Qt5Widgets_FOUND)
+IF(USE_QT5)
+    FIND_PACKAGE(Qt5Widgets REQUIRED)
     FIND_PACKAGE(Qt5LinguistTools REQUIRED)
-    GET_TARGET_PROPERTY(QT5_LRELEASE_EXECUTABLE Qt5::lrelease IMPORTED_LOCATION)
-ENDIF(Qt5Widgets_FOUND)
+ELSE(USE_QT5)
+    FIND_PACKAGE(Qt4 REQUIRED)
+ENDIF(USE_QT5)
 
 FIND_PACKAGE(Doxygen)
 
@@ -77,103 +51,74 @@ IF(NOT CMAKE_BUILD_TYPE_TOLOWER MATCHES "debug")
     ADD_DEFINITIONS(-DQT_NO_DEBUG_OUTPUT)
 ENDIF()
 
-IF(Qt4_FOUND)
-    SET(QT_VER "qt4")
+SET(QTSPELL_LIB_VERSION ${QTSPELL_MAJOR}.${QTSPELL_MINOR}.0)
+SET(QTSPELL_SO_VERSION ${QTSPELL_MAJOR})
 
-    ADD_TRANSLATION(qtspell-qt4_QM ${QT_LRELEASE_EXECUTABLE} ${qtspell_TS})
-
-    QT4_WRAP_CPP(qtspell-qt4_MOC ${qtspell_MOC_HDRS})
-
-    ADD_LIBRARY(qtspell-qt4 SHARED ${qtspell_SRCS} ${qtspell-qt4_MOC} ${qtspell_HDRS} ${qtspell_MOC_HDRS} ${qtspell-qt4_QM})
-    QT4_USE_MODULES(qtspell-qt4 Core Gui)
-    SET_TARGET_PROPERTIES(qtspell-qt4 PROPERTIES COMPILE_DEFINITIONS "ISO_CODES_PREFIX=\"${ISO_CODES_PREFIX}\"")
-    SET_TARGET_PROPERTIES(qtspell-qt4 PROPERTIES VERSION ${QTSPELL_LIB_VERSION} SOVERSION ${QTSPELL_SO_VERSION})
-    IF(WIN32)
-        SET_TARGET_PROPERTIES(qtspell-qt4 PROPERTIES SUFFIX "-${QTSPELL_SO_VERSION}${CMAKE_SHARED_LIBRARY_SUFFIX}")
-    ENDIF(WIN32)
-    TARGET_LINK_LIBRARIES(qtspell-qt4 ${ENCHANT_LDFLAGS})
-
-    IF(${BUILD_STATIC_LIBS})
-        ADD_LIBRARY(qtspell-qt4-static STATIC ${qtspell_SRCS} ${qtspell-qt4_MOC} ${qtspell_HDRS} ${qtspell_MOC_HDRS} ${qtspell-qt4_QM})
-        QT4_USE_MODULES(qtspell-qt4-static Core Gui)
-        SET_TARGET_PROPERTIES(qtspell-qt4-static PROPERTIES COMPILE_DEFINITIONS "ISO_CODES_PREFIX=\"${ISO_CODES_PREFIX}\"")
-        SET_TARGET_PROPERTIES(qtspell-qt4-static PROPERTIES VERSION ${QTSPELL_LIB_VERSION} SOVERSION ${QTSPELL_SO_VERSION})
-        SET_TARGET_PROPERTIES(qtspell-qt4-static PROPERTIES OUTPUT_NAME qtspell-qt4)
-    ENDIF(${BUILD_STATIC_LIBS})
-
-    CONFIGURE_FILE(QtSpell.pc.in QtSpell-qt4.pc @ONLY)
-
-    INSTALL(TARGETS qtspell-qt4
-        RUNTIME DESTINATION bin COMPONENT libraries
-        ARCHIVE DESTINATION ${LIB_INSTALL_DIR} COMPONENT libraries
-        LIBRARY DESTINATION ${LIB_INSTALL_DIR} COMPONENT libraries
-    )
-    IF(${BUILD_STATIC_LIBS})
-        INSTALL(TARGETS qtspell-qt4-static ARCHIVE DESTINATION ${LIB_INSTALL_DIR} COMPONENT libraries)
-    ENDIF(${BUILD_STATIC_LIBS})
-    INSTALL(FILES src/QtSpell.hpp DESTINATION ${INCLUDE_INSTALL_DIR}/QtSpell-${QT_VER})
-    INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/QtSpell-qt4.pc DESTINATION ${LIB_INSTALL_DIR}/pkgconfig)
-    INSTALL(FILES ${qtspell-qt4_QM} DESTINATION share/qt4/translations)
-ENDIF(Qt4_FOUND)
-
-IF(Qt5Widgets_FOUND)
+IF(USE_QT5)
     SET(QT_VER "qt5")
+    QT5_ADD_TRANSLATION(qtspell_QM ${qtspell_TS})
+    QT5_WRAP_CPP(qtspell_MOC ${qtspell_MOC_HDRS})
+ELSE(USE_QT5)
+    SET(QT_VER "qt4")
+    QT4_ADD_TRANSLATION(qtspell_QM ${qtspell_TS})
+    QT4_WRAP_CPP(qtspell_MOC ${qtspell_MOC_HDRS})
+ENDIF(USE_QT5)
 
-    ADD_TRANSLATION(qtspell-qt5_QM Qt5::lrelease ${qtspell_TS})
+ADD_LIBRARY(qtspell SHARED ${qtspell_SRCS} ${qtspell_MOC} ${qtspell_HDRS} ${qtspell_MOC_HDRS} ${qtspell_QM})
+IF(USE_QT5)
+    QT5_USE_MODULES(qtspell Widgets)
+ELSE(USE_QT5)
+    QT4_USE_MODULES(qtspell Core Gui)
+ENDIF(USE_QT5)
+SET_TARGET_PROPERTIES(qtspell PROPERTIES COMPILE_DEFINITIONS "ISO_CODES_PREFIX=\"${ISO_CODES_PREFIX}\"")
+SET_TARGET_PROPERTIES(qtspell PROPERTIES VERSION ${QTSPELL_LIB_VERSION} SOVERSION ${QTSPELL_SO_VERSION})
+SET_TARGET_PROPERTIES(qtspell PROPERTIES OUTPUT_NAME qtspell-${QT_VER})
+IF(WIN32)
+    SET_TARGET_PROPERTIES(qtspell PROPERTIES SUFFIX "-${QTSPELL_SO_VERSION}${CMAKE_SHARED_LIBRARY_SUFFIX}")
+ENDIF(WIN32)
+TARGET_LINK_LIBRARIES(qtspell ${ENCHANT_LDFLAGS})
 
-    QT5_WRAP_CPP(qtspell-qt5_MOC ${qtspell_MOC_HDRS})
+IF(${BUILD_STATIC_LIBS})
+    ADD_LIBRARY(qtspell-static STATIC ${qtspell_SRCS} ${qtspell_MOC} ${qtspell_HDRS} ${qtspell_MOC_HDRS} ${qtspell_QM})
+    IF(USE_QT5)
+        QT5_USE_MODULES(qtspell-static Widgets)
+    ELSE(USE_QT5)
+        QT4_USE_MODULES(qtspell-static Core Gui)
+    ENDIF(USE_QT5)
+    SET_TARGET_PROPERTIES(qtspell-static PROPERTIES COMPILE_DEFINITIONS "ISO_CODES_PREFIX=\"${ISO_CODES_PREFIX}\"")
+    SET_TARGET_PROPERTIES(qtspell-static PROPERTIES VERSION ${QTSPELL_LIB_VERSION} SOVERSION ${QTSPELL_SO_VERSION})
+    SET_TARGET_PROPERTIES(qtspell-static PROPERTIES OUTPUT_NAME qtspell-${QT_VER})
+ENDIF(${BUILD_STATIC_LIBS})
 
-    ADD_LIBRARY(qtspell-qt5 SHARED ${qtspell_SRCS} ${qtspell-qt5_MOC} ${qtspell_HDRS} ${qtspell-qt5_QM})
-    QT5_USE_MODULES(qtspell-qt5 Widgets)
-    SET_TARGET_PROPERTIES(qtspell-qt5 PROPERTIES COMPILE_DEFINITIONS "ISO_CODES_PREFIX=\"${ISO_CODES_PREFIX}\"")
-    SET_TARGET_PROPERTIES(qtspell-qt5 PROPERTIES VERSION ${QTSPELL_LIB_VERSION} SOVERSION ${QTSPELL_SO_VERSION})
-    IF(WIN32)
-        SET_TARGET_PROPERTIES(qtspell-qt5 PROPERTIES SUFFIX "-${QTSPELL_SO_VERSION}${CMAKE_SHARED_LIBRARY_SUFFIX}")
-    ENDIF(WIN32)
-    TARGET_LINK_LIBRARIES(qtspell-qt5 ${ENCHANT_LDFLAGS})
+CONFIGURE_FILE(QtSpell.pc.in QtSpell-${QT_VER}.pc @ONLY)
 
-    IF(${BUILD_STATIC_LIBS})
-        ADD_LIBRARY(qtspell-qt5-static STATIC ${qtspell_SRCS} ${qtspell-qt5_MOC} ${qtspell_HDRS} ${qtspell-qt5_QM})
-        QT5_USE_MODULES(qtspell-qt5-static Widgets)
-        SET_TARGET_PROPERTIES(qtspell-qt5-static PROPERTIES COMPILE_DEFINITIONS "ISO_CODES_PREFIX=\"${ISO_CODES_PREFIX}\"")
-        SET_TARGET_PROPERTIES(qtspell-qt5-static PROPERTIES VERSION ${QTSPELL_LIB_VERSION} SOVERSION ${QTSPELL_SO_VERSION})
-        SET_TARGET_PROPERTIES(qtspell-qt5-static PROPERTIES OUTPUT_NAME qtspell-qt5)
-    ENDIF(${BUILD_STATIC_LIBS})
-
-    CONFIGURE_FILE(QtSpell.pc.in QtSpell-qt5.pc @ONLY)
-
-
-    INSTALL(TARGETS qtspell-qt5
-        RUNTIME DESTINATION bin COMPONENT libraries
-        ARCHIVE DESTINATION ${LIB_INSTALL_DIR} COMPONENT libraries
-        LIBRARY DESTINATION ${LIB_INSTALL_DIR} COMPONENT libraries
-    )
-    IF(${BUILD_STATIC_LIBS})
-        INSTALL(TARGETS qtspell-qt5-static ARCHIVE DESTINATION ${LIB_INSTALL_DIR} COMPONENT libraries)
-    ENDIF(${BUILD_STATIC_LIBS})
-    INSTALL(FILES src/QtSpell.hpp DESTINATION ${INCLUDE_INSTALL_DIR}/QtSpell-${QT_VER})
-    INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/QtSpell-qt5.pc DESTINATION ${LIB_INSTALL_DIR}/pkgconfig)
-    INSTALL(FILES ${qtspell-qt5_QM} DESTINATION share/qt5/translations)
-ENDIF(Qt5Widgets_FOUND)
-
+INSTALL(TARGETS qtspell
+    RUNTIME DESTINATION bin COMPONENT libraries
+    ARCHIVE DESTINATION ${LIB_INSTALL_DIR} COMPONENT libraries
+    LIBRARY DESTINATION ${LIB_INSTALL_DIR} COMPONENT libraries
+)
+IF(${BUILD_STATIC_LIBS})
+    INSTALL(TARGETS qtspell-static ARCHIVE DESTINATION ${LIB_INSTALL_DIR} COMPONENT libraries)
+ENDIF(${BUILD_STATIC_LIBS})
+INSTALL(FILES src/QtSpell.hpp DESTINATION ${INCLUDE_INSTALL_DIR}/QtSpell-${QT_VER})
+INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/QtSpell-${QT_VER}.pc DESTINATION ${LIB_INSTALL_DIR}/pkgconfig)
+INSTALL(FILES ${qtspell_QM} DESTINATION share/${QT_VER}/translations)
 
 
 # Example
-IF(Qt4_FOUND)
-    QT4_WRAP_CPP(example-qt4_MOC examples/example.hpp)
-    ADD_EXECUTABLE(example-qt4 examples/example.cpp ${example-qt4_MOC})
-    QT4_USE_MODULES(example-qt4 Core Gui)
-    INCLUDE_DIRECTORIES(src/)
-    TARGET_LINK_LIBRARIES(example-qt4 qtspell-qt4)
-ENDIF(Qt4_FOUND)
-
-IF(Qt5Widgets_FOUND)
-    QT5_WRAP_CPP(example-qt5_MOC examples/example.hpp)
-    ADD_EXECUTABLE(example-qt5 examples/example.cpp ${example-qt5_MOC})
-    QT5_USE_MODULES(example-qt5 Widgets)
-    INCLUDE_DIRECTORIES(src/)
-    TARGET_LINK_LIBRARIES(example-qt5 qtspell-qt5)
-ENDIF(Qt5Widgets_FOUND)
+IF(USE_QT5)
+    QT5_WRAP_CPP(example_MOC examples/example.hpp)
+ELSE(USE_QT5)
+    QT4_WRAP_CPP(example_MOC examples/example.hpp)
+ENDIF(USE_QT5)
+ADD_EXECUTABLE(example examples/example.cpp ${example_MOC})
+IF(USE_QT5)
+    QT5_USE_MODULES(example Widgets)
+ELSE(USE_QT5)
+    QT4_USE_MODULES(example Core Gui)
+ENDIF(USE_QT5)
+INCLUDE_DIRECTORIES(src/)
+TARGET_LINK_LIBRARIES(example qtspell)
 
 
 # Documentation
@@ -192,12 +137,13 @@ ENDIF(DOXYGEN_FOUND)
 # spec and debian changelog
 set(ENV{LC_ALL} "C")
 EXECUTE_PROCESS(COMMAND date +%a\ %b\ %d\ %Y OUTPUT_VARIABLE SPEC_DATE OUTPUT_STRIP_TRAILING_WHITESPACE)
-EXECUTE_PROCESS(COMMAND date -R OUTPUT_VARIABLE PACKAGE_RFC_DATE OUTPUT_STRIP_TRAILING_WHITESPACE)
-CONFIGURE_FILE(qtspell.spec.in qtspell.spec @ONLY)
-CONFIGURE_FILE(debian/changelog.in debian/changelog @ONLY)
+EXECUTE_PROCESS(COMMAND date -R OUTPUT_VARIABLE RFC_DATE OUTPUT_STRIP_TRAILING_WHITESPACE)
+CONFIGURE_FILE(packaging/qtspell.spec.in qtspell.spec @ONLY)
+CONFIGURE_FILE(packaging/debian/changelog.in debian/changelog @ONLY)
+
 
 # Dist
 ADD_CUSTOM_TARGET(dist
-    COMMAND git archive --format=tar --prefix=${CMAKE_PROJECT_NAME}-${QTSPELL_VERSION}/ HEAD | xz > ${CMAKE_BINARY_DIR}/${CMAKE_PROJECT_NAME}-${QTSPELL_VERSION}.tar.gz
+    COMMAND git archive --format=tar --prefix=${CMAKE_PROJECT_NAME}-${QTSPELL_VERSION}/ HEAD | xz > ${CMAKE_BINARY_DIR}/${CMAKE_PROJECT_NAME}-${QTSPELL_VERSION}.tar.xz
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 )

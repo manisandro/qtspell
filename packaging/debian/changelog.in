@@ -1,0 +1,5 @@
+qtspell (@QTSPELL_VERSION@-1) experimental; urgency=low
+
+  * qtspell @QTSPELL_VERSION@.
+
+ -- Sandro Mani <manisandro@gmail.com>  @RFC_DATE@

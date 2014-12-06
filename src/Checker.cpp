@@ -20,8 +20,11 @@
 #include "Codetable.hpp"
 
 #include <enchant++.h>
+#include <QApplication>
+#include <QLibraryInfo>
 #include <QLocale>
 #include <QMenu>
+#include <QTranslator>
 
 static void dict_describe_cb(const char* const lang_tag,
 							 const char* const /*provider_name*/,
@@ -33,6 +36,23 @@ static void dict_describe_cb(const char* const lang_tag,
 	languages->append(lang_tag);
 }
 
+
+class TranslationsInit {
+public:
+	TranslationsInit(){
+		QString translationsPath = QLibraryInfo::location(QLibraryInfo::TranslationsPath);
+#ifdef Q_OS_WIN
+		QDir packageDir = QDir(QString("%1/../").arg(QApplication::applicationDirPath()));
+		translationsPath = packageDir.absolutePath() + translationsPath.mid(QLibraryInfo::location(QLibraryInfo::PrefixPath).length());
+#endif
+		spellTranslator.load("QtSpell_" + QLocale::system().name(), translationsPath);
+		QApplication::instance()->installTranslator(&spellTranslator);
+	}
+private:
+	QTranslator spellTranslator;
+};
+
+
 namespace QtSpell {
 
 Checker::Checker(QObject* parent)
@@ -43,6 +63,9 @@ Checker::Checker(QObject* parent)
 	  m_spellingEnabled(true),
 	  m_wordRegEx("^[A-Za-z0-9']+$")
 {
+	static TranslationsInit tsInit;
+	Q_UNUSED(tsInit);
+
 	// setLanguageInternal: setLanguage is virtual and cannot be called in the constructor
 	setLanguageInternal("");
 }

@@ -1,27 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.0" language="de">
+<TS version="2.0" language="el">
 <context>
     <name>QtSpell::Checker</name>
     <message>
         <source>More...</source>
-        <translation>Mehr...</translation>
+        <translation>Περισσότερα...</translation>
     </message>
     <message>
         <source>Add &quot;%1&quot; to dictionary</source>
-        <translation>„%1‟ zum Wörterbuch hinzufügen</translation>
+        <translation>Προσθήκη &quot;%1&quot; στο Λεξικό</translation>
     </message>
     <message>
         <source>Ignore &quot;%1&quot;</source>
-        <translation>„%1‟ ignorieren</translation>
+        <translation type="unfinished">Αγνοήστε &quot;%1&quot;</translation>
     </message>
     <message>
         <source>Check spelling</source>
-        <translation>Rechtschreibprüfung</translation>
+        <translation type="unfinished">Ελέγξτε την ορθογραφία</translation>
     </message>
     <message>
         <source>Languages</source>
-        <translation>Sprachen</translation>
+        <translation>Γλώσσες</translation>
     </message>
 </context>
 </TS>

@@ -1,27 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.0" language="de">
+<TS version="2.0" language="mn">
 <context>
     <name>QtSpell::Checker</name>
     <message>
         <source>More...</source>
-        <translation>Mehr...</translation>
+        <translation>Илүү...</translation>
     </message>
     <message>
         <source>Add &quot;%1&quot; to dictionary</source>
-        <translation>„%1‟ zum Wörterbuch hinzufügen</translation>
+        <translation>&quot;%1&quot; Лавлар руу нэмэх</translation>
     </message>
     <message>
         <source>Ignore &quot;%1&quot;</source>
-        <translation>„%1‟ ignorieren</translation>
+        <translation type="unfinished">&quot;%1&quot; үл хэрэгсэнэ</translation>
     </message>
     <message>
         <source>Check spelling</source>
-        <translation>Rechtschreibprüfung</translation>
+        <translation type="unfinished">үг үсгийн алдаа байгаа эсэхийг шалгах</translation>
     </message>
     <message>
         <source>Languages</source>
-        <translation>Sprachen</translation>
+        <translation>хэл</translation>
     </message>
 </context>
 </TS>

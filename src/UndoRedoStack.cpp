@@ -19,7 +19,6 @@
 #include "UndoRedoStack.hpp"
 #include "TextEditChecker_p.hpp"
 #include <QTextDocument>
-#include <QTextStream>
 
 namespace QtSpell {
 
@@ -53,7 +52,6 @@ struct UndoRedoStack::UndoableDelete : public UndoRedoStack::Action {
 		end = _end;
 		text = _text;
 		deleteKeyUsed = _deleteKeyUsed;
-		QTextStream(stdout) << deleteKeyUsed << endl;
 		isWhitespace = text.length() == 1 && text[0].isSpace();
 		isMergeable = (text.length() == 1);
 	}

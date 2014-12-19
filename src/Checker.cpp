@@ -132,7 +132,11 @@ bool Checker::checkWord(const QString &word) const
 	if(!word.contains(m_wordRegEx)){
 		return true;
 	}
-	return m_speller->check(word.toUtf8().data());
+	try{
+		return m_speller->check(word.toUtf8().data());
+	}catch(const enchant::Exception&){
+		return true;
+	}
 }
 
 void Checker::ignoreWord(const QString &word) const

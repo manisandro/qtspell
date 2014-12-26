@@ -79,11 +79,18 @@ void UndoRedoStack::handleContentsChange(int pos, int removed, int added)
 	if(m_actionInProgress || (added == 0 && removed == 0)){
 		return;
 	}
+	// Qt Bug? Apparently, when contents is pasted at pos = 0, added and removed are too large by 1
+	QTextCursor c(m_textEdit->textCursor());
+	c.movePosition(QTextCursor::End);
+	int len = c.position();
+	if(pos == 0 && added > len){
+		--added;
+		--removed;
+	}
 	qDeleteAll(m_redoStack);
 	m_redoStack.clear();
 	if(removed > 0){
 		m_textEdit->document()->undo();
-		QTextCursor c(m_textEdit->textCursor());
 		bool deleteWasUsed = (c.anchor() == c.position() && c.position() == pos);
 		c.setPosition(pos);
 		c.setPosition(pos + removed, QTextCursor::KeepAnchor);

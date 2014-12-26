@@ -273,18 +273,22 @@ void TextEditChecker::slotCheckRange(int pos, int removed, int added)
 		m_undoRedoStack->handleContentsChange(pos, removed, added);
 	}
 
-	// Set default format on inserted text
-	TextCursor tmp(m_textEdit->textCursor());
-	tmp.beginEditBlock();
-	tmp.movePosition(QTextCursor::End, QTextCursor::KeepAnchor);
-	int endPos = qMin(tmp.position(), pos + added);
+	// Qt Bug? Apparently, when contents is pasted at pos = 0, added and removed are too large by 1
+	TextCursor c(m_textEdit->textCursor());
+	c.movePosition(QTextCursor::End);
+	int len = c.position();
+	if(pos == 0 && added > len){
+		--added;
+	}
 
-	tmp.setPosition(pos);
-	tmp.moveWordStart();
-	tmp.setPosition(endPos, QTextCursor::KeepAnchor);
-	tmp.setCharFormat(QTextCharFormat());
-	checkSpelling(tmp.anchor(), tmp.position());
-	tmp.endEditBlock();
+	// Set default format on inserted text
+	c.beginEditBlock();
+	c.setPosition(pos);
+	c.moveWordStart();
+	c.setPosition(pos + added, QTextCursor::KeepAnchor);
+	c.setCharFormat(QTextCharFormat());
+	checkSpelling(c.anchor(), c.position());
+	c.endEditBlock();
 }
 
 void TextEditChecker::undo()
@@ -303,7 +307,6 @@ void TextEditChecker::redo()
 		m_undoRedoStack->redo();
 		m_undoRedoInProgress = false;
 	}
-
 }
 
 } // QtSpell

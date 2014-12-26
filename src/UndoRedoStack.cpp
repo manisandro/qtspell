@@ -151,9 +151,6 @@ void UndoRedoStack::undo()
 		c.setPosition(insertAction->pos);
 		c.setPosition(insertAction->pos + insertAction->text.length(), QTextCursor::KeepAnchor);
 		c.removeSelectedText();
-		if(!m_undoStack.empty() && isReplace(dynamic_cast<UndoableDelete*>(m_undoStack.top()), insertAction)){
-			undo();
-		}
 	}else{
 		UndoableDelete* deleteAction = static_cast<UndoableDelete*>(undoAction);
 		c.setPosition(deleteAction->start);
@@ -187,9 +184,6 @@ void UndoRedoStack::redo()
 		c.setPosition(deleteAction->start);
 		c.setPosition(deleteAction->end, QTextCursor::KeepAnchor);
 		c.removeSelectedText();
-		if(!m_redoStack.empty() && isReplace(deleteAction, dynamic_cast<UndoableInsert*>(m_redoStack.top()))){
-			redo();
-		}
 	}
 	m_textEdit->setTextCursor(c);
 	emit undoAvailable(!m_undoStack.empty());
@@ -211,11 +205,5 @@ bool UndoRedoStack::deleteMergeable(const UndoableDelete* prev, const UndoableDe
 		   (cur->isMergeable && prev->isMergeable) &&
 		   (prev->start == cur->start || prev->start == cur->end);
 }
-
-bool UndoRedoStack::isReplace(const UndoableDelete* del, const UndoableInsert* ins) const
-{
-	return del && ins && del->start == ins->pos;
-}
-
 
 } // QtSpell

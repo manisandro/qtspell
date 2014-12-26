@@ -55,7 +55,6 @@ private:
 
 	bool insertMergeable(const UndoableInsert* prev, const UndoableInsert* cur) const;
 	bool deleteMergeable(const UndoableDelete* prev, const UndoableDelete* cur) const;
-	bool isReplace(const UndoableDelete* del, const UndoableInsert* ins) const;
 };
 
 } // QtSpell

@@ -1,3 +1,9 @@
+qtspell 0.6.0 (Dec 27 2014):
+* Workaround issue where QTextDocument reports incorrect added/removed counts
+* Fix crash when enabling undo/redo but no textedit is attached
+* Fix text changed by undo/redo not being checked for spelling
+* Don't merge delete + insert undo/redo steps
+
 qtspell 0.5.0 (Dec 12 2014):
 * Reworked undo/redo
 * Many translations

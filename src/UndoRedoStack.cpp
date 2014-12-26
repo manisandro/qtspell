@@ -61,7 +61,9 @@ UndoRedoStack::UndoRedoStack(TextEditProxy* textEdit)
 	: m_actionInProgress(false), m_textEdit(textEdit)
 {
 	// We need to keep undo/redo enabled to retreive the deleted text in onContentsChange...
-	m_textEdit->document()->setUndoRedoEnabled(true);
+	if(m_textEdit){
+		m_textEdit->document()->setUndoRedoEnabled(true);
+	}
 }
 
 void UndoRedoStack::clear()

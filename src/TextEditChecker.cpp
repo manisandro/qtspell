@@ -270,11 +270,7 @@ void TextEditChecker::slotDetachTextEdit()
 
 void TextEditChecker::slotCheckRange(int pos, int removed, int added)
 {
-	if(m_undoRedoInProgress){
-		return;
-	}
-
-	if(m_undoRedoStack != 0){
+	if(m_undoRedoStack != 0 && !m_undoRedoInProgress){
 		m_undoRedoStack->handleContentsChange(pos, removed, added);
 	}
 

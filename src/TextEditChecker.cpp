@@ -256,11 +256,16 @@ void TextEditChecker::slotCheckDocumentChanged()
 
 void TextEditChecker::slotDetachTextEdit()
 {
+	bool undoWasEnabled = m_undoRedoStack != 0;
+	setUndoRedoEnabled(false);
 	// Signals are disconnected when objects are deleted
 	delete m_textEdit;
 	m_textEdit = 0;
 	m_document = 0;
-	setUndoRedoEnabled(false);
+	if(undoWasEnabled){
+		// Crate dummy instance
+		setUndoRedoEnabled(true);
+	}
 }
 
 void TextEditChecker::slotCheckRange(int pos, int removed, int added)

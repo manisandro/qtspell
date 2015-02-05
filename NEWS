@@ -1,3 +1,7 @@
+qtspell 0.7.0 (Feb 05 2015):
+* Install event filter to override the builtin undo/redo
+* Ensure cursor visible after undo/redo
+
 qtspell 0.6.0 (Dec 27 2014):
 * Workaround issue where QTextDocument reports incorrect added/removed counts
 * Fix crash when enabling undo/redo but no textedit is attached

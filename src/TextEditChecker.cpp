@@ -120,6 +120,7 @@ void TextEditChecker::setTextEdit(TextEditProxy *textEdit)
 		disconnect(m_textEdit->object(), SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(slotShowContextMenu(QPoint)));
 		disconnect(m_textEdit->document(), SIGNAL(contentsChange(int,int,int)), this, SLOT(slotCheckRange(int,int,int)));
 		m_textEdit->setContextMenuPolicy(m_oldContextMenuPolicy);
+		m_textEdit->removeEventFilter(this);
 
 		// Remove spelling format
 		QTextCursor cursor = m_textEdit->textCursor();
@@ -141,8 +142,24 @@ void TextEditChecker::setTextEdit(TextEditProxy *textEdit)
 		m_oldContextMenuPolicy = m_textEdit->contextMenuPolicy();
 		setUndoRedoEnabled(undoWasEnabled);
 		m_textEdit->setContextMenuPolicy(Qt::CustomContextMenu);
+		m_textEdit->installEventFilter(this);
 		checkSpelling();
 	}
+}
+
+bool TextEditChecker::eventFilter(QObject* obj, QEvent* event)
+{
+	if(event->type() == QEvent::KeyPress){
+		QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
+		if(keyEvent->key() == Qt::Key_Z && keyEvent->modifiers() == Qt::CTRL){
+			undo();
+			return true;
+		}else if(keyEvent->key() == Qt::Key_Z && keyEvent->modifiers() == Qt::CTRL | Qt::SHIFT){
+			redo();
+			return true;
+		}
+	}
+	return QObject::eventFilter(obj, event);
 }
 
 void TextEditChecker::checkSpelling(int start, int end)

@@ -101,6 +101,8 @@ public:
 	virtual void setContextMenuPolicy(Qt::ContextMenuPolicy policy) = 0;
 	virtual void setTextCursor(const QTextCursor& cursor) = 0;
 	virtual Qt::ContextMenuPolicy contextMenuPolicy() const = 0;
+	virtual void installEventFilter(QObject* filterObj) = 0;
+	virtual void removeEventFilter(QObject* filterObj) = 0;
 	virtual QObject* object() = 0;
 };
 
@@ -116,6 +118,8 @@ public:
 	void setContextMenuPolicy(Qt::ContextMenuPolicy policy){ m_textEdit->setContextMenuPolicy(policy); }
 	void setTextCursor(const QTextCursor& cursor){ m_textEdit->setTextCursor(cursor); }
 	Qt::ContextMenuPolicy contextMenuPolicy() const{ return m_textEdit->contextMenuPolicy(); }
+	void installEventFilter(QObject* filterObj){ m_textEdit->installEventFilter(filterObj); }
+	void removeEventFilter(QObject* filterObj){ m_textEdit->removeEventFilter(filterObj); }
 	QObject* object(){ return m_textEdit; }
 
 private:

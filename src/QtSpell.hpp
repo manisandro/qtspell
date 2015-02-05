@@ -309,6 +309,7 @@ private:
 	void insertWord(int start, int end, const QString& word);
 	bool isAttached() const{ return m_textEdit != 0; }
 	void setTextEdit(TextEditProxy* textEdit);
+	bool eventFilter(QObject *obj, QEvent *event);
 
 private slots:
 	void slotShowContextMenu(const QPoint& pos);

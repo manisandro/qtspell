@@ -109,7 +109,7 @@ popd
 
 
 %files qt4
-%doc COPYING
+%license COPYING
 %{_libdir}/libqtspell-qt4.so.*
 %{_qt4_translationdir}/QtSpell_*.qm
 
@@ -119,7 +119,7 @@ popd
 %{_libdir}/pkgconfig/QtSpell-qt4.pc
 
 %files qt5
-%doc COPYING
+%license COPYING
 %{_libdir}/libqtspell-qt5.so.*
 
 %files qt5-devel
@@ -131,7 +131,7 @@ popd
 %{_qt5_translationdir}/QtSpell_*.qm
 
 %files doc
-%doc COPYING
+%license COPYING
 %doc build-qt4/doc/html
 
 

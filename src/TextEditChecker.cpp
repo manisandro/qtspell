@@ -314,6 +314,7 @@ void TextEditChecker::undo()
 	if(m_undoRedoStack != 0){
 		m_undoRedoInProgress = true;
 		m_undoRedoStack->undo();
+		m_textEdit->ensureCursorVisible();
 		m_undoRedoInProgress = false;
 	}
 }
@@ -323,6 +324,7 @@ void TextEditChecker::redo()
 	if(m_undoRedoStack != 0){
 		m_undoRedoInProgress = true;
 		m_undoRedoStack->redo();
+		m_textEdit->ensureCursorVisible();
 		m_undoRedoInProgress = false;
 	}
 }

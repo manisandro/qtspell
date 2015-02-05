@@ -103,6 +103,7 @@ public:
 	virtual Qt::ContextMenuPolicy contextMenuPolicy() const = 0;
 	virtual void installEventFilter(QObject* filterObj) = 0;
 	virtual void removeEventFilter(QObject* filterObj) = 0;
+	virtual void ensureCursorVisible() = 0;
 	virtual QObject* object() = 0;
 };
 
@@ -120,6 +121,7 @@ public:
 	Qt::ContextMenuPolicy contextMenuPolicy() const{ return m_textEdit->contextMenuPolicy(); }
 	void installEventFilter(QObject* filterObj){ m_textEdit->installEventFilter(filterObj); }
 	void removeEventFilter(QObject* filterObj){ m_textEdit->removeEventFilter(filterObj); }
+	void ensureCursorVisible() { m_textEdit->ensureCursorVisible(); }
 	QObject* object(){ return m_textEdit; }
 
 private:

@@ -1,3 +1,6 @@
+qtspell 0.7.1 (Feb 08 2015):
+* Fix z key press getting eaten
+
 qtspell 0.7.0 (Feb 05 2015):
 * Install event filter to override the builtin undo/redo
 * Ensure cursor visible after undo/redo

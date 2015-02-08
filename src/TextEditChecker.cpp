@@ -154,7 +154,7 @@ bool TextEditChecker::eventFilter(QObject* obj, QEvent* event)
 		if(keyEvent->key() == Qt::Key_Z && keyEvent->modifiers() == Qt::CTRL){
 			undo();
 			return true;
-		}else if(keyEvent->key() == Qt::Key_Z && keyEvent->modifiers() == Qt::CTRL | Qt::SHIFT){
+		}else if(keyEvent->key() == Qt::Key_Z && keyEvent->modifiers() == (Qt::CTRL | Qt::SHIFT)){
 			redo();
 			return true;
 		}

@@ -304,6 +304,7 @@ void TextEditChecker::slotCheckRange(int pos, int removed, int added)
 	c.setPosition(pos);
 	c.moveWordStart();
 	c.setPosition(pos + added, QTextCursor::KeepAnchor);
+	c.moveWordEnd(QTextCursor::KeepAnchor);
 	c.setCharFormat(QTextCharFormat());
 	checkSpelling(c.anchor(), c.position());
 	c.endEditBlock();

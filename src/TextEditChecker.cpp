@@ -126,7 +126,12 @@ void TextEditChecker::setTextEdit(TextEditProxy *textEdit)
 		QTextCursor cursor = m_textEdit->textCursor();
 		cursor.movePosition(QTextCursor::Start);
 		cursor.movePosition(QTextCursor::End, QTextCursor::KeepAnchor);
-		cursor.setCharFormat(QTextCharFormat());
+		QTextCharFormat fmt = cursor.charFormat();
+		QTextCharFormat defaultFormat = QTextCharFormat();
+		fmt.setFontUnderline(defaultFormat.fontUnderline());
+		fmt.setUnderlineColor(defaultFormat.underlineColor());
+		fmt.setUnderlineStyle(defaultFormat.underlineStyle());
+		cursor.setCharFormat(fmt);
 	}
 	bool undoWasEnabled = m_undoRedoStack != 0;
 	setUndoRedoEnabled(false);
@@ -179,7 +184,7 @@ void TextEditChecker::checkSpelling(int start, int end)
 	errorFmt.setFontUnderline(true);
 	errorFmt.setUnderlineColor(Qt::red);
 	errorFmt.setUnderlineStyle(QTextCharFormat::SpellCheckUnderline);
-	QTextCharFormat defaultFmt;
+	QTextCharFormat defaultFormat = QTextCharFormat();
 
 	TextCursor cursor(m_textEdit->textCursor());
 	cursor.beginEditBlock();
@@ -190,9 +195,13 @@ void TextEditChecker::checkSpelling(int start, int end)
 		bool correct = checkWord(word);
 		qDebug() << "Checking word:" << word << "(" << cursor.anchor() << "-" << cursor.position() << "), correct:" << correct;
 		if(!correct){
-			cursor.setCharFormat(errorFmt);
+			cursor.mergeCharFormat(errorFmt);
 		}else{
-			cursor.setCharFormat(defaultFmt);
+			QTextCharFormat fmt = cursor.charFormat();
+			fmt.setFontUnderline(defaultFormat.fontUnderline());
+			fmt.setUnderlineColor(defaultFormat.underlineColor());
+			fmt.setUnderlineStyle(defaultFormat.underlineStyle());
+			cursor.setCharFormat(fmt);
 		}
 		// Go to next word start
 		while(cursor.position() < end && !cursor.isWordChar(cursor.nextChar())){
@@ -305,7 +314,12 @@ void TextEditChecker::slotCheckRange(int pos, int removed, int added)
 	c.moveWordStart();
 	c.setPosition(pos + added, QTextCursor::KeepAnchor);
 	c.moveWordEnd(QTextCursor::KeepAnchor);
-	c.setCharFormat(QTextCharFormat());
+	QTextCharFormat fmt = c.charFormat();
+	QTextCharFormat defaultFormat = QTextCharFormat();
+	fmt.setFontUnderline(defaultFormat.fontUnderline());
+	fmt.setUnderlineColor(defaultFormat.underlineColor());
+	fmt.setUnderlineStyle(defaultFormat.underlineStyle());
+	c.setCharFormat(fmt);
 	checkSpelling(c.anchor(), c.position());
 	c.endEditBlock();
 }

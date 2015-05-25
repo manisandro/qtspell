@@ -181,7 +181,6 @@ private:
 	bool m_decodeCodes;
 	bool m_spellingCheckbox;
 	bool m_spellingEnabled;
-	QRegExp m_wordRegEx;
 
 	/**
 	 * @brief Get the word at the specified cursor position.

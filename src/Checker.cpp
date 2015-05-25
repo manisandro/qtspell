@@ -60,8 +60,7 @@ Checker::Checker(QObject* parent)
 	  m_speller(0),
 	  m_decodeCodes(false),
 	  m_spellingCheckbox(false),
-	  m_spellingEnabled(true),
-	  m_wordRegEx("^[A-Za-z0-9']+$")
+	  m_spellingEnabled(true)
 {
 	static TranslationsInit tsInit;
 	Q_UNUSED(tsInit);
@@ -126,10 +125,6 @@ bool Checker::checkWord(const QString &word) const
 	}
 	// Skip empty strings and single characters
 	if(word.length() < 2){
-		return true;
-	}
-	// Don't check non-word blocks
-	if(!word.contains(m_wordRegEx)){
 		return true;
 	}
 	try{

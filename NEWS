@@ -1,3 +1,6 @@
+qtspell 0.7.3 (Apr 07 2015):
+* Only reset underline style when clearing error style
+
 qtspell 0.7.2 (Mar 30 2015):
 * Ensure both words resulting from separating a compound word are checked
 

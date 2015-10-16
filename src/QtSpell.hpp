@@ -32,6 +32,7 @@ class QLineEdit;
 class QMenu;
 class QPlainTextEdit;
 class QPoint;
+class QTextCursor;
 class QTextDocument;
 class QTextEdit;
 
@@ -242,6 +243,24 @@ public:
 	 */
 	void setTextEdit(QPlainTextEdit* textEdit);
 
+	/**
+	 * @brief Set the QTextCharFormat property identifier which marks whether
+	 *        a word ought to be spell-checked.
+	 * @param propertyId By default this is -1, meaning that no such property
+	 *        is set. To enable, pass a value above QTextFormat::UserProperty.
+	 * @note If the value returned by QTextFormat::intProperty is 1, spelling
+	 *       is skipped. To work correctly, this property needs to be set for
+	 *       the entire word.
+	 */
+	void setNoSpellingPropertyId(int propertyId){ m_noSpellingProperty = propertyId; }
+
+	/**
+	 * @brief Returns the current QTextCharFormat property identifier which
+	 *        marks whether a word ought to be spell-checked.
+	 * @return The no-spelling QTextCharFormat property identifier.
+	 */
+	int noSpellingPropertyId() const{ return m_noSpellingProperty; }
+
 	void checkSpelling(int start = 0, int end = -1);
 
 	/**
@@ -303,12 +322,14 @@ private:
 	UndoRedoStack* m_undoRedoStack;
 	bool m_undoRedoInProgress;
 	Qt::ContextMenuPolicy m_oldContextMenuPolicy;
+	int m_noSpellingProperty;
 
 	QString getWord(int pos, int* start = 0, int* end = 0) const;
 	void insertWord(int start, int end, const QString& word);
 	bool isAttached() const{ return m_textEdit != 0; }
 	void setTextEdit(TextEditProxy* textEdit);
 	bool eventFilter(QObject *obj, QEvent *event);
+	bool noSpellingPropertySet(const QTextCursor& cursor) const;
 
 private slots:
 	void slotShowContextMenu(const QPoint& pos);

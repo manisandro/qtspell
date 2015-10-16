@@ -23,6 +23,7 @@
 #include <QDebug>
 #include <QPlainTextEdit>
 #include <QTextEdit>
+#include <QTextBlock>
 
 namespace QtSpell {
 
@@ -95,6 +96,7 @@ TextEditChecker::TextEditChecker(QObject* parent)
 	m_document = 0;
 	m_undoRedoStack = 0;
 	m_undoRedoInProgress = false;
+	m_noSpellingProperty = -1;
 }
 
 TextEditChecker::~TextEditChecker()
@@ -191,9 +193,15 @@ void TextEditChecker::checkSpelling(int start, int end)
 	cursor.setPosition(start);
 	while(cursor.position() < end) {
 		cursor.moveWordEnd(QTextCursor::KeepAnchor);
+		bool correct;
 		QString word = cursor.selectedText();
-		bool correct = checkWord(word);
-		qDebug() << "Checking word:" << word << "(" << cursor.anchor() << "-" << cursor.position() << "), correct:" << correct;
+		if(noSpellingPropertySet(cursor)) {
+			correct = true;
+			qDebug() << "Skipping word:" << word << "(" << cursor.anchor() << "-" << cursor.position() << ")";
+		} else {
+			correct = checkWord(word);
+			qDebug() << "Checking word:" << word << "(" << cursor.anchor() << "-" << cursor.position() << "), correct:" << correct;
+		}
 		if(!correct){
 			cursor.mergeCharFormat(errorFmt);
 		}else{
@@ -211,6 +219,24 @@ void TextEditChecker::checkSpelling(int start, int end)
 	cursor.endEditBlock();
 
 	m_textEdit->document()->blockSignals(false);
+}
+
+bool TextEditChecker::noSpellingPropertySet(const QTextCursor &cursor) const
+{
+	if(m_noSpellingProperty < QTextFormat::UserProperty) {
+		return false;
+	}
+	if(cursor.charFormat().intProperty(m_noSpellingProperty) == 1) {
+		return true;
+	}
+	const QList<QTextLayout::FormatRange>& formats = cursor.block().layout()->additionalFormats();
+	int pos = cursor.positionInBlock();
+	foreach(const QTextLayout::FormatRange& range, formats) {
+		if(pos > range.start && pos <= range.start + range.length && range.format.intProperty(m_noSpellingProperty) == 1) {
+			return true;
+		}
+	}
+	return false;
 }
 
 void TextEditChecker::clearUndoRedo()

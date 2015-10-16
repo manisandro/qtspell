@@ -2,14 +2,14 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8.11)
 
 # Project properties
 PROJECT(qtspell)
-SET(QTSPELL_VERSION 0.7.4)
+SET(QTSPELL_VERSION 0.8.0)
 
 
 # Soname
 # MAJOR is incremented when symbols are removed or changed in an incompatible way
 # MINOR is incremented when new symbols are added
 SET(QTSPELL_MAJOR 0)
-SET(QTSPELL_MINOR 2)
+SET(QTSPELL_MINOR 3)
 
 
 # Variables

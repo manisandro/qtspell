@@ -275,14 +275,6 @@ public:
 	void checkSpelling(int start = 0, int end = -1);
 
 	/**
-	 * @brief Clears the undo/redo stack.
-	 * @note QtSpell::TextEditChecker reimplements the undo/redo functionality
-	 *       since the one provided by QTextDocument also tracks text format
-	 *       changes (i.e. underlining of spelling errors) which is undesirable.
-	 */
-	void clearUndoRedo();
-
-	/**
 	 * @brief Sets whether undo/redo functionality is enabled.
 	 * @param enabled Whether undo/redo is enabled.
 	 * @note QtSpell::TextEditChecker reimplements the undo/redo functionality
@@ -307,6 +299,14 @@ public slots:
 	 *       changes (i.e. underlining of spelling errors) which is undesirable.
 	 */
 	void redo();
+
+	/**
+	 * @brief Clears the undo/redo stack.
+	 * @note QtSpell::TextEditChecker reimplements the undo/redo functionality
+	 *       since the one provided by QTextDocument also tracks text format
+	 *       changes (i.e. underlining of spelling errors) which is undesirable.
+	 */
+	void clearUndoRedo();
 
 signals:
 	/**

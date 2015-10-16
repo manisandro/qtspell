@@ -54,6 +54,8 @@ public:
 		QPushButton* buttonRedo = bbox->addButton("Redo", QDialogButtonBox::ActionRole);
 		buttonRedo->setEnabled(false);
 
+		QPushButton* buttonClear = bbox->addButton("Clear", QDialogButtonBox::ActionRole);
+
 		QWidget* widget = new QWidget(this);
 		setCentralWidget(widget);
 
@@ -73,6 +75,8 @@ public:
 		connect(checker, SIGNAL(redoAvailable(bool)), buttonRedo, SLOT(setEnabled(bool)));
 		connect(buttonUndo, SIGNAL(clicked()), checker, SLOT(undo()));
 		connect(buttonRedo, SIGNAL(clicked()), checker, SLOT(redo()));
+		connect(buttonClear, SIGNAL(clicked()), textEdit, SLOT(clear()));
+		connect(buttonClear, SIGNAL(clicked()), checker, SLOT(clearUndoRedo()));
 	}
 };
 

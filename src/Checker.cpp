@@ -55,6 +55,11 @@ private:
 
 namespace QtSpell {
 
+bool checkLanguageInstalled(const QString &lang)
+{
+	return enchant::Broker::instance()->dict_exists(lang.toStdString());
+}
+
 Checker::Checker(QObject* parent)
 	: QObject(parent),
 	  m_speller(0),

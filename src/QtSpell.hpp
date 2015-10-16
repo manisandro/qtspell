@@ -38,7 +38,18 @@ class QTextEdit;
 
 namespace enchant { class Dict; }
 
+
+/**
+ * @brief QtSpell namespace
+ */
 namespace QtSpell {
+
+/**
+ * @brief Check whether the dictionary for a language is installed
+ */
+bool QTSPELL_API checkLanguageInstalled(const QString& lang);
+
+///////////////////////////////////////////////////////////////////////////////
 
 /**
  * @brief An abstract class providing spell checking support.

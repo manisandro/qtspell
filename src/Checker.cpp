@@ -151,7 +151,7 @@ QList<QString> Checker::getSpellingSuggestions(const QString& word) const
 		std::vector<std::string> suggestions;
 		m_speller->suggest(word.toUtf8().data(), suggestions);
 		for(std::size_t i = 0, n = suggestions.size(); i < n; ++i){
-			list.append(QString::fromStdString(suggestions[i]));
+			list.append(QString::fromUtf8(suggestions[i].c_str()));
 		}
 	}
 	return list;

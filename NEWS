@@ -1,3 +1,6 @@
+qtspell 0.8.1 (Nov 16 2015):
+* Fix encoding issues in strings returned by Checker::getSpellingSuggestions
+
 qtspell 0.8.0 (Oct 16 2015):
 * Add QtSpell::TextEditChecker::setNoSpellingPropertyId
 * Add QtSpell::checkLanguageInstalled

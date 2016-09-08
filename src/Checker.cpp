@@ -188,7 +188,8 @@ void Checker::showContextMenu(QMenu* menu, const QPoint& pos, int wordPos)
 			if(!suggestions.isEmpty()){
 				for(int i = 0, n = qMin(10, suggestions.length()); i < n; ++i){
 					QAction* action = new QAction(suggestions[i], menu);
-					action->setData(wordPos);
+					action->setProperty("wordPos", wordPos);
+					action->setProperty("suggestion", suggestions[i]);
 					connect(action, SIGNAL(triggered()), this, SLOT(slotReplaceWord()));
 					menu->insertAction(insertPos, action);
 				}
@@ -196,7 +197,8 @@ void Checker::showContextMenu(QMenu* menu, const QPoint& pos, int wordPos)
 					QMenu* moreMenu = new QMenu();
 					for(int i = 10, n = suggestions.length(); i < n; ++i){
 						QAction* action = new QAction(suggestions[i], moreMenu);
-						action->setData(wordPos);
+						action->setProperty("wordPos", wordPos);
+						action->setProperty("suggestion", suggestions[i]);
 						connect(action, SIGNAL(triggered()), this, SLOT(slotReplaceWord()));
 						moreMenu->addAction(action);
 					}
@@ -251,7 +253,7 @@ void Checker::showContextMenu(QMenu* menu, const QPoint& pos, int wordPos)
 
 void Checker::slotAddWord()
 {
-	int wordPos = qobject_cast<QAction*>(QObject::sender())->data().toInt();
+	int wordPos = qobject_cast<QAction*>(QObject::sender())->property("wordPos").toInt();
 	int start, end;
 	addWordToDictionary(getWord(wordPos, &start, &end));
 	checkSpelling(start, end);
@@ -259,7 +261,7 @@ void Checker::slotAddWord()
 
 void Checker::slotIgnoreWord()
 {
-	int wordPos = qobject_cast<QAction*>(QObject::sender())->data().toInt();
+	int wordPos = qobject_cast<QAction*>(QObject::sender())->property("wordPos").toInt();
 	int start, end;
 	ignoreWord(getWord(wordPos, &start, &end));
 	checkSpelling(start, end);
@@ -267,10 +269,11 @@ void Checker::slotIgnoreWord()
 
 void Checker::slotReplaceWord()
 {
-	int wordPos = qobject_cast<QAction*>(QObject::sender())->data().toInt();
+	QAction* action = qobject_cast<QAction*>(QObject::sender());
+	int wordPos = action->property("wordPos").toInt();
 	int start, end;
 	getWord(wordPos, &start, &end);
-	insertWord(start, end, qobject_cast<QAction*>(QObject::sender())->text());
+	insertWord(start, end, action->property("suggestion").toString());
 }
 
 void Checker::slotSetLanguage(bool checked)

@@ -53,6 +53,7 @@ cmake ..
 make
 sudo make install
 ```
+By default, QtSpell is built against Qt5. If you want to build against Qt4, pass `-DUSE_QT5=OFF` to `cmake`.
 
 Author
 ------

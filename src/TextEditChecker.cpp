@@ -185,7 +185,7 @@ void TextEditChecker::checkSpelling(int start, int end)
 	QTextCharFormat errorFmt;
 	errorFmt.setFontUnderline(true);
 	errorFmt.setUnderlineColor(Qt::red);
-	errorFmt.setUnderlineStyle(QTextCharFormat::SpellCheckUnderline);
+	errorFmt.setUnderlineStyle(QTextCharFormat::WaveUnderline);
 	QTextCharFormat defaultFormat = QTextCharFormat();
 
 	TextCursor cursor(m_textEdit->textCursor());

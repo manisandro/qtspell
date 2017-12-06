@@ -36,6 +36,15 @@ static void dict_describe_cb(const char* const lang_tag,
 	languages->append(lang_tag);
 }
 
+static enchant::Broker* get_enchant_broker() {
+#ifdef QTSPELL_ENCHANT2
+    static enchant::Broker broker;
+    return &broker;
+#else
+    return enchant::Broker::instance();
+#endif
+}
+
 
 class TranslationsInit {
 public:
@@ -57,7 +66,7 @@ namespace QtSpell {
 
 bool checkLanguageInstalled(const QString &lang)
 {
-	return enchant::Broker::instance()->dict_exists(lang.toStdString());
+	return get_enchant_broker()->dict_exists(lang.toStdString());
 }
 
 Checker::Checker(QObject* parent)
@@ -106,7 +115,7 @@ bool Checker::setLanguageInternal(const QString &lang)
 
 	// Request dictionary
 	try {
-		m_speller = enchant::Broker::instance()->request_dict(m_lang.toStdString());
+		m_speller = get_enchant_broker()->request_dict(m_lang.toStdString());
 	} catch(enchant::Exception& e) {
 		qWarning("Failed to load dictionary: %s", e.what());
 		m_lang = QString::null;
@@ -159,7 +168,7 @@ QList<QString> Checker::getSpellingSuggestions(const QString& word) const
 
 QList<QString> Checker::getLanguageList()
 {
-	enchant::Broker* broker = enchant::Broker::instance();
+	enchant::Broker* broker = get_enchant_broker();
 	QList<QString> languages;
 	broker->list_dicts(dict_describe_cb, &languages);
 	qSort(languages);

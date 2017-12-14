@@ -1,3 +1,8 @@
+qtspell 0.8.3 (Dec 15 2017):
+* Decode language code also if only the language portion is specified
+* Workaround SpellcheckUnderline not working with certain themes by using WaveUnderline instead
+* Add support for enchant2
+
 qtspell 0.8.2 (Sep 08 2016):
 * Fix ampersands of mnemonics ending up in replaced text when picking suggestion from context menu
 

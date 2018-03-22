@@ -177,10 +177,14 @@ QList<QString> Checker::getLanguageList()
 
 QString Checker::decodeLanguageCode(const QString &lang)
 {
-	QString language, country;
-	Codetable::instance()->lookup(lang, language, country);
+	QString language, country, extra;
+	Codetable::instance()->lookup(lang, language, country, extra);
 	if(!country.isEmpty()){
-		return QString("%1 (%2)").arg(language, country);
+		QString decoded = QString("%1 (%2)").arg(language, country);
+		if(!extra.isEmpty()) {
+			decoded += QString(" [%1]").arg(extra);
+		}
+		return decoded;
 	}else{
 		return language;
 	}

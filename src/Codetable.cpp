@@ -34,7 +34,7 @@ Codetable* Codetable::instance()
 	return &codetable;
 }
 
-void Codetable::lookup(const QString &language_code, QString &language_name, QString &country_name) const
+void Codetable::lookup(const QString &language_code, QString &language_name, QString &country_name, QString& extra) const
 {
 	QStringList parts = language_code.split("_");
 	language_name = language_code;
@@ -47,6 +47,9 @@ void Codetable::lookup(const QString &language_code, QString &language_name, QSt
 	}
 	if(parts.size() >= 2) {
 		country_name = m_countryTable.contains(parts[1]) ? m_countryTable.value(parts[1]) : parts[1];
+	}
+	if(parts.size() > 2) {
+		extra = QStringList(parts.mid(2)).join("_");
 	}
 }
 

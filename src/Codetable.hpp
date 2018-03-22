@@ -48,7 +48,7 @@ public:
 	 * @param language_name The language name (i.e. "English")
 	 * @param country_name The country name (i.e. "United States")
 	 */
-	void lookup(const QString& language_code, QString& language_name, QString& country_name) const;
+	void lookup(const QString& language_code, QString& language_name, QString& country_name, QString& extra) const;
 
 private:
 	typedef void (*parser_t)(const QXmlStreamReader&, QMap<QString, QString>&);

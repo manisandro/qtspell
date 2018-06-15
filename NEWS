@@ -1,5 +1,6 @@
-qtspell 0.8.5 (Apr 16 2018):
+qtspell 0.8.5 (Jun 15 2018):
 * Adapt language code decoding for enchant-2.x
+* Don't use deprecated QT5_USE_MODULES
 
 qtspell 0.8.4 (Dec 15 2017):
 * Correctly detect enchant2 < 2.1.3

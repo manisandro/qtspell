@@ -12,15 +12,15 @@ Usage
 ### Simple
 To check spelling in a `QTextEdit` or `QPlainTextEdit`, proceed as follows:
 ```c++
-// create a QtSpell::TextEdit instance
-QtSpell::TextEditChecker checker;
+// create a QtSpell::TextEditChecker instance
+QtSpell::TextEditChecker* checker = new QtSpell::TextEditChecker();
 
 // optional: set the language (by default, the system locale is used)
-checker.setLanguage("de_CH");
+checker->setLanguage("de_CH");
 
 // attach to a QTextEdit or QPlainTextEdit
-QTextEdit textEdit = new QTextEdit();
-checker.setTextEdit(textEdit);
+QTextEdit* textEdit = new QTextEdit();
+checker->setTextEdit(textEdit);
 ```
 If you wish to use `undo` and `redo` on a `Q{Plain}TextEdit` with an attached
 `QtSpell::TextEditChecker`, use the undo and redo functionality provided by

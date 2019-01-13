@@ -21,6 +21,7 @@
 #include <QDir>
 #include <QFile>
 #include <QXmlStreamReader>
+#include <QtDebug>
 #include <libintl.h>
 
 #define ISO_639_DOMAIN  "iso_639"
@@ -77,7 +78,7 @@ void Codetable::parseIso639Elements(const QXmlStreamReader &xml, QMap<QString, Q
 		QString name = xml.attributes().value("name").toString();
 		QString code = xml.attributes().value("iso_639_1_code").toString();
 		if(!name.isEmpty() && !code.isEmpty()){
-			name = QString::fromUtf8(dgettext(ISO_639_DOMAIN, name.toLatin1().data()));
+			name = QString::fromUtf8(dgettext(ISO_639_DOMAIN, name.toUtf8().constData()));
 			table.insert(code, name);
 		}
 	}
@@ -89,7 +90,7 @@ void Codetable::parseIso3166Elements(const QXmlStreamReader &xml, QMap<QString, 
 		QString name = xml.attributes().value("name").toString();
 		QString code = xml.attributes().value("alpha_2_code").toString();
 		if(!name.isEmpty() && !code.isEmpty()){
-			name = QString::fromUtf8(dgettext(ISO_3166_DOMAIN, name.toLatin1().data()));;
+			name = QString::fromUtf8(dgettext(ISO_3166_DOMAIN, name.toUtf8().constData()));
 			table.insert(code, name);
 		}
 	}
@@ -100,7 +101,7 @@ void Codetable::parse(const QDir& dataDir, const QString& basename, const parser
 	QString filename = QDir(QDir(dataDir.filePath("xml")).filePath("iso-codes")).absoluteFilePath(basename);
 	QFile file(filename);
 	if(!file.open(QIODevice::ReadOnly)){
-		qWarning("Failed to open %s for reading", file.fileName().toLatin1().data());
+		qWarning() << "Failed to open " << file.fileName() << " for reading";
 		return;
 	}
 

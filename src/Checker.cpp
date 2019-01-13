@@ -25,6 +25,7 @@
 #include <QLocale>
 #include <QMenu>
 #include <QTranslator>
+#include <QtDebug>
 
 static void dict_describe_cb(const char* const lang_tag,
 							 const char* const /*provider_name*/,
@@ -107,7 +108,7 @@ bool Checker::setLanguageInternal(const QString &lang)
 	if(m_lang.isEmpty()){
 		m_lang = QLocale::system().name();
 		if(m_lang.toLower() == "c" || m_lang.isEmpty()){
-			qWarning("Cannot use system locale %s", m_lang.toLatin1().data());
+			qWarning() << "Cannot use system locale " << m_lang;
 			m_lang = QString::null;
 			return false;
 		}
@@ -117,7 +118,7 @@ bool Checker::setLanguageInternal(const QString &lang)
 	try {
 		m_speller = get_enchant_broker()->request_dict(m_lang.toStdString());
 	} catch(enchant::Exception& e) {
-		qWarning("Failed to load dictionary: %s", e.what());
+		qWarning() << "Failed to load dictionary: " << e.what();
 		m_lang = QString::null;
 		return false;
 	}

@@ -229,7 +229,7 @@ bool TextEditChecker::noSpellingPropertySet(const QTextCursor &cursor) const
 	if(cursor.charFormat().intProperty(m_noSpellingProperty) == 1) {
 		return true;
 	}
-	const QList<QTextLayout::FormatRange>& formats = cursor.block().layout()->additionalFormats();
+	const QVector<QTextLayout::FormatRange>& formats = cursor.block().layout()->formats();
 	int pos = cursor.positionInBlock();
 	foreach(const QTextLayout::FormatRange& range, formats) {
 		if(pos > range.start && pos <= range.start + range.length && range.format.intProperty(m_noSpellingProperty) == 1) {

@@ -109,7 +109,7 @@ bool Checker::setLanguageInternal(const QString &lang)
 		m_lang = QLocale::system().name();
 		if(m_lang.toLower() == "c" || m_lang.isEmpty()){
 			qWarning() << "Cannot use system locale " << m_lang;
-			m_lang = QString::null;
+			m_lang = QString();
 			return false;
 		}
 	}
@@ -119,7 +119,7 @@ bool Checker::setLanguageInternal(const QString &lang)
 		m_speller = get_enchant_broker()->request_dict(m_lang.toStdString());
 	} catch(enchant::Exception& e) {
 		qWarning() << "Failed to load dictionary: " << e.what();
-		m_lang = QString::null;
+		m_lang = QString();
 		return false;
 	}
 
@@ -172,7 +172,7 @@ QList<QString> Checker::getLanguageList()
 	enchant::Broker* broker = get_enchant_broker();
 	QList<QString> languages;
 	broker->list_dicts(dict_describe_cb, &languages);
-	qSort(languages);
+	std::sort(languages.begin(), languages.end());
 	return languages;
 }
 

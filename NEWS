@@ -1,3 +1,7 @@
+qtspell 0.9.0 (Mar 21 2020):
+* Fix broken add to dictionary / ignore word
+* Drop Qt4 support
+
 qtspell 0.8.5 (Jun 15 2018):
 * Adapt language code decoding for enchant-2.x
 * Don't use deprecated QT5_USE_MODULES

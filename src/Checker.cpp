@@ -267,7 +267,7 @@ void Checker::showContextMenu(QMenu* menu, const QPoint& pos, int wordPos)
 
 void Checker::slotAddWord()
 {
-	int wordPos = qobject_cast<QAction*>(QObject::sender())->property("wordPos").toInt();
+	int wordPos = qobject_cast<QAction*>(QObject::sender())->data().toInt();
 	int start, end;
 	addWordToDictionary(getWord(wordPos, &start, &end));
 	checkSpelling(start, end);
@@ -275,7 +275,7 @@ void Checker::slotAddWord()
 
 void Checker::slotIgnoreWord()
 {
-	int wordPos = qobject_cast<QAction*>(QObject::sender())->property("wordPos").toInt();
+	int wordPos = qobject_cast<QAction*>(QObject::sender())->data().toInt();
 	int start, end;
 	ignoreWord(getWord(wordPos, &start, &end));
 	checkSpelling(start, end);

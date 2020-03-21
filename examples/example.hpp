@@ -44,7 +44,7 @@ public:
 
 		QLabel* label = new QLabel("Type some text into the text box.\n"
 								   "Try misspelling some words. Then right click them.");
-		QTextEdit* textEdit = new QTextEdit(this);
+		m_textEdit = new QTextEdit(this);
 
 		QDialogButtonBox* bbox = new QDialogButtonBox(this);
 
@@ -56,28 +56,45 @@ public:
 
 		QPushButton* buttonClear = bbox->addButton("Clear", QDialogButtonBox::ActionRole);
 
+		QPushButton* buttonDetach = bbox->addButton("Detach", QDialogButtonBox::ActionRole);
+		QPushButton* buttonAttach = bbox->addButton("Attach", QDialogButtonBox::ActionRole);
+
 		QWidget* widget = new QWidget(this);
 		setCentralWidget(widget);
 
 		QVBoxLayout* layout = new QVBoxLayout(widget);
 		layout->addWidget(label);
-		layout->addWidget(textEdit, 1);
+		layout->addWidget(m_textEdit, 1);
 		layout->addWidget(bbox);
 
 
-		QtSpell::TextEditChecker* checker = new QtSpell::TextEditChecker(this);
-		checker->setTextEdit(textEdit);
-		checker->setDecodeLanguageCodes(true);
-		checker->setShowCheckSpellingCheckbox(true);
-		checker->setUndoRedoEnabled(true);
+		m_checker = new QtSpell::TextEditChecker(this);
+		m_checker->setTextEdit(m_textEdit);
+		m_checker->setDecodeLanguageCodes(true);
+		m_checker->setShowCheckSpellingCheckbox(true);
+		m_checker->setUndoRedoEnabled(true);
 
-		connect(checker, SIGNAL(undoAvailable(bool)), buttonUndo, SLOT(setEnabled(bool)));
-		connect(checker, SIGNAL(redoAvailable(bool)), buttonRedo, SLOT(setEnabled(bool)));
-		connect(buttonUndo, SIGNAL(clicked()), checker, SLOT(undo()));
-		connect(buttonRedo, SIGNAL(clicked()), checker, SLOT(redo()));
-		connect(buttonClear, SIGNAL(clicked()), textEdit, SLOT(clear()));
-		connect(buttonClear, SIGNAL(clicked()), checker, SLOT(clearUndoRedo()));
+		connect(m_checker, &QtSpell::TextEditChecker::undoAvailable, buttonUndo, &QPushButton::setEnabled);
+		connect(m_checker, &QtSpell::TextEditChecker::redoAvailable, buttonRedo, &QPushButton::setEnabled);
+		connect(buttonUndo, &QPushButton::clicked, m_checker, &QtSpell::TextEditChecker::undo);
+		connect(buttonRedo, &QPushButton::clicked, m_checker, &QtSpell::TextEditChecker::redo);
+		connect(buttonClear, &QPushButton::clicked, m_textEdit, &QTextEdit::clear);
+		connect(buttonClear, &QPushButton::clicked, m_checker, &QtSpell::TextEditChecker::clearUndoRedo);
+		connect(buttonDetach, &QPushButton::clicked, this, &MainWindow::detach);
+		connect(buttonAttach, &QPushButton::clicked, this, &MainWindow::attach);
 	}
+
+private slots:
+	void attach() {
+		m_checker->setTextEdit(m_textEdit);
+	}
+	void detach() {
+		m_checker->setTextEdit(static_cast<QTextEdit*>(nullptr));
+	}
+
+private:
+	QtSpell::TextEditChecker* m_checker = nullptr;
+	QTextEdit* m_textEdit = nullptr;
 };
 
 #endif // EXAMPLE_HPP

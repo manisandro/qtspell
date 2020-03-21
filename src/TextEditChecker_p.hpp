@@ -90,9 +90,10 @@ private:
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class TextEditProxy {
+class TextEditProxy : public QObject {
+	Q_OBJECT
 public:
-	virtual ~TextEditProxy(){}
+	TextEditProxy(QObject* parent = nullptr) : QObject(parent) {}
 	virtual QTextCursor textCursor() const = 0;
 	virtual QTextDocument* document() const = 0;
 	virtual QPoint mapToGlobal(const QPoint& pos) const = 0;
@@ -104,13 +105,21 @@ public:
 	virtual void installEventFilter(QObject* filterObj) = 0;
 	virtual void removeEventFilter(QObject* filterObj) = 0;
 	virtual void ensureCursorVisible() = 0;
-	virtual QObject* object() = 0;
+
+signals:
+	void customContextMenuRequested(const QPoint& pos);
+	void textChanged();
+	void editDestroyed();
 };
 
 template<class T>
 class TextEditProxyT : public TextEditProxy {
 public:
-	TextEditProxyT(T* textEdit) : m_textEdit(textEdit) {}
+	TextEditProxyT(T* textEdit, QObject* parent = nullptr) : TextEditProxy(parent), m_textEdit(textEdit) {
+		connect(textEdit, &T::customContextMenuRequested, this, &TextEditProxy::customContextMenuRequested);
+		connect(textEdit, &T::textChanged, this, &TextEditProxy::textChanged);
+		connect(textEdit, &T::destroyed, this, &TextEditProxy::editDestroyed);
+	}
 	QTextCursor textCursor() const{ return m_textEdit->textCursor(); }
 	QTextDocument* document() const{ return m_textEdit->document(); }
 	QPoint mapToGlobal(const QPoint& pos) const{ return m_textEdit->mapToGlobal(pos); }
@@ -122,10 +131,9 @@ public:
 	void installEventFilter(QObject* filterObj){ m_textEdit->installEventFilter(filterObj); }
 	void removeEventFilter(QObject* filterObj){ m_textEdit->removeEventFilter(filterObj); }
 	void ensureCursorVisible() { m_textEdit->ensureCursorVisible(); }
-	QObject* object(){ return m_textEdit; }
 
 private:
-	T* m_textEdit;
+	T* m_textEdit = nullptr;
 };
 
 } // QtSpell

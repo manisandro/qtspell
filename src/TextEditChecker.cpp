@@ -92,35 +92,30 @@ void TextCursor::moveWordEnd(MoveMode moveMode)
 TextEditChecker::TextEditChecker(QObject* parent)
 	: Checker(parent)
 {
-	m_textEdit = 0;
-	m_document = 0;
-	m_undoRedoStack = 0;
-	m_undoRedoInProgress = false;
-	m_noSpellingProperty = -1;
 }
 
 TextEditChecker::~TextEditChecker()
 {
-	setTextEdit(reinterpret_cast<TextEditProxy*>(0));
+	setTextEdit(static_cast<TextEditProxy*>(nullptr));
 }
 
 void TextEditChecker::setTextEdit(QTextEdit* textEdit)
 {
-	setTextEdit(textEdit ? new TextEditProxyT<QTextEdit>(textEdit) : reinterpret_cast<TextEditProxyT<QTextEdit>*>(0));
+	setTextEdit(textEdit ? new TextEditProxyT<QTextEdit>(textEdit) : static_cast<TextEditProxyT<QTextEdit>*>(nullptr));
 }
 
 void TextEditChecker::setTextEdit(QPlainTextEdit* textEdit)
 {
-	setTextEdit(textEdit ? new TextEditProxyT<QPlainTextEdit>(textEdit) : reinterpret_cast<TextEditProxyT<QPlainTextEdit>*>(0));
+	setTextEdit(textEdit ? new TextEditProxyT<QPlainTextEdit>(textEdit) : static_cast<TextEditProxyT<QPlainTextEdit>*>(nullptr));
 }
 
 void TextEditChecker::setTextEdit(TextEditProxy *textEdit)
 {
-	if(!textEdit && m_textEdit){
-		disconnect(m_textEdit->object(), SIGNAL(destroyed()), this, SLOT(slotDetachTextEdit()));
-		disconnect(m_textEdit->object(), SIGNAL(textChanged()), this, SLOT(slotCheckDocumentChanged()));
-		disconnect(m_textEdit->object(), SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(slotShowContextMenu(QPoint)));
-		disconnect(m_textEdit->document(), SIGNAL(contentsChange(int,int,int)), this, SLOT(slotCheckRange(int,int,int)));
+	if(m_textEdit){
+		disconnect(m_textEdit, &TextEditProxy::editDestroyed, this, &TextEditChecker::slotDetachTextEdit);
+		disconnect(m_textEdit, &TextEditProxy::textChanged, this, &TextEditChecker::slotCheckDocumentChanged);
+		disconnect(m_textEdit, &TextEditProxy::customContextMenuRequested, this, &TextEditChecker::slotShowContextMenu);
+		disconnect(m_textEdit->document(), &QTextDocument::contentsChange, this, &TextEditChecker::slotCheckRange);
 		m_textEdit->setContextMenuPolicy(m_oldContextMenuPolicy);
 		m_textEdit->removeEventFilter(this);
 
@@ -135,17 +130,17 @@ void TextEditChecker::setTextEdit(TextEditProxy *textEdit)
 		fmt.setUnderlineStyle(defaultFormat.underlineStyle());
 		cursor.setCharFormat(fmt);
 	}
-	bool undoWasEnabled = m_undoRedoStack != 0;
+	bool undoWasEnabled = m_undoRedoStack != nullptr;
 	setUndoRedoEnabled(false);
 	delete m_textEdit;
-	m_document = 0;
+	m_document = nullptr;
 	m_textEdit = textEdit;
 	if(m_textEdit){
 		m_document = m_textEdit->document();
-		connect(m_textEdit->object(), SIGNAL(destroyed()), this, SLOT(slotDetachTextEdit()));
-		connect(m_textEdit->object(), SIGNAL(textChanged()), this, SLOT(slotCheckDocumentChanged()));
-		connect(m_textEdit->object(), SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(slotShowContextMenu(QPoint)));
-		connect(m_textEdit->document(), SIGNAL(contentsChange(int,int,int)), this, SLOT(slotCheckRange(int,int,int)));
+		connect(m_textEdit, &TextEditProxy::editDestroyed, this, &TextEditChecker::slotDetachTextEdit);
+		connect(m_textEdit, &TextEditProxy::textChanged, this, &TextEditChecker::slotCheckDocumentChanged);
+		connect(m_textEdit, &TextEditProxy::customContextMenuRequested, this, &TextEditChecker::slotShowContextMenu);
+		connect(m_textEdit->document(), &QTextDocument::contentsChange, this, &TextEditChecker::slotCheckRange);
 		m_oldContextMenuPolicy = m_textEdit->contextMenuPolicy();
 		setUndoRedoEnabled(undoWasEnabled);
 		m_textEdit->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -248,18 +243,18 @@ void TextEditChecker::clearUndoRedo()
 
 void TextEditChecker::setUndoRedoEnabled(bool enabled)
 {
-	if(enabled == (m_undoRedoStack != 0)){
+	if(enabled == (m_undoRedoStack != nullptr)){
 		return;
 	}
 	if(!enabled){
 		delete m_undoRedoStack;
-		m_undoRedoStack = 0;
+		m_undoRedoStack = nullptr;
 		emit undoAvailable(false);
 		emit redoAvailable(false);
 	}else{
 		m_undoRedoStack = new UndoRedoStack(m_textEdit);
-		connect(m_undoRedoStack, SIGNAL(undoAvailable(bool)), this, SIGNAL(undoAvailable(bool)));
-		connect(m_undoRedoStack, SIGNAL(redoAvailable(bool)), this, SIGNAL(redoAvailable(bool)));
+		connect(m_undoRedoStack, &QtSpell::UndoRedoStack::undoAvailable, this, &TextEditChecker::undoAvailable);
+		connect(m_undoRedoStack, &QtSpell::UndoRedoStack::redoAvailable, this, &TextEditChecker::redoAvailable);
 	}
 }
 
@@ -295,25 +290,24 @@ void TextEditChecker::slotShowContextMenu(const QPoint &pos)
 void TextEditChecker::slotCheckDocumentChanged()
 {
 	if(m_document != m_textEdit->document()) {
-		bool undoWasEnabled = m_undoRedoStack != 0;
+		bool undoWasEnabled = m_undoRedoStack != nullptr;
 		setUndoRedoEnabled(false);
 		if(m_document){
-			disconnect(m_document, SIGNAL(contentsChange(int,int,int)), this, SLOT(slotCheckRange(int,int,int)));
+			disconnect(m_document, &QTextDocument::contentsChange, this, &TextEditChecker::slotCheckRange);
 		}
 		m_document = m_textEdit->document();
-		connect(m_document, SIGNAL(contentsChange(int,int,int)), this, SLOT(slotCheckRange(int,int,int)));
+		connect(m_document, &QTextDocument::contentsChange, this, &TextEditChecker::slotCheckRange);
 		setUndoRedoEnabled(undoWasEnabled);
 	}
 }
 
 void TextEditChecker::slotDetachTextEdit()
 {
-	bool undoWasEnabled = m_undoRedoStack != 0;
+	bool undoWasEnabled = m_undoRedoStack != nullptr;
 	setUndoRedoEnabled(false);
-	// Signals are disconnected when objects are deleted
 	delete m_textEdit;
-	m_textEdit = 0;
-	m_document = 0;
+	m_textEdit = nullptr;
+	m_document = nullptr;
 	if(undoWasEnabled){
 		// Crate dummy instance
 		setUndoRedoEnabled(true);
@@ -322,7 +316,7 @@ void TextEditChecker::slotDetachTextEdit()
 
 void TextEditChecker::slotCheckRange(int pos, int removed, int added)
 {
-	if(m_undoRedoStack != 0 && !m_undoRedoInProgress){
+	if(m_undoRedoStack != nullptr && !m_undoRedoInProgress){
 		m_undoRedoStack->handleContentsChange(pos, removed, added);
 	}
 
@@ -352,7 +346,7 @@ void TextEditChecker::slotCheckRange(int pos, int removed, int added)
 
 void TextEditChecker::undo()
 {
-	if(m_undoRedoStack != 0){
+	if(m_undoRedoStack != nullptr){
 		m_undoRedoInProgress = true;
 		m_undoRedoStack->undo();
 		m_textEdit->ensureCursorVisible();
@@ -362,7 +356,7 @@ void TextEditChecker::undo()
 
 void TextEditChecker::redo()
 {
-	if(m_undoRedoStack != 0){
+	if(m_undoRedoStack != nullptr){
 		m_undoRedoInProgress = true;
 		m_undoRedoStack->redo();
 		m_textEdit->ensureCursorVisible();

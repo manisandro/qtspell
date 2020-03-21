@@ -48,8 +48,8 @@ private:
 	struct UndoableInsert;
 	struct UndoableDelete;
 
-	bool m_actionInProgress;
-	TextEditProxy* m_textEdit;
+	bool m_actionInProgress = false;
+	TextEditProxy* m_textEdit = nullptr;
 	QStack<Action*> m_undoStack;
 	QStack<Action*> m_redoStack;
 

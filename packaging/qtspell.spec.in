@@ -8,7 +8,6 @@ URL:            https://github.com/manisandro/qtspell
 Source0:        https://github.com/manisandro/qtspell/releases/download/%{version}/%{name}-%{version}.tar.xz
 
 BuildRequires:  cmake
-BuildRequires:  qt4-devel
 BuildRequires:  qt5-qtbase-devel
 BuildRequires:  qt5-qttools-devel
 BuildRequires:  enchant-devel
@@ -19,23 +18,6 @@ Requires:       iso-codes
 %description
 QtSpell adds spell-checking functionality to Qt's text widgets, using the
 enchant spell-checking library.
-
-
-%package        qt4
-Summary:        Spell checking for Qt4 text widgets
-
-%description    qt4
-QtSpell adds spell-checking functionality to Qt4's text widgets, using the
-enchant spell-checking library.
-
-
-%package        qt4-devel
-Summary:        Development files for %{name}-qt4
-Requires:       %{name}-qt4%{?_isa} = %{version}-%{release}
-
-%description    qt4-devel
-The %{name}-devel package contains libraries and header files for
-developing applications that use %{name}.
 
 
 %package        qt5
@@ -75,48 +57,23 @@ that use %{name}.
 
 
 %prep
-%setup -q -n %{name}-%{version}
+%autosetup -p1 -n %{name}-%{version}
 
 
 %build
-mkdir build-qt4
-pushd build-qt4
-%cmake ..
-make %{?_smp_mflags}
-make doc
-popd
-
 mkdir build-qt5
 pushd build-qt5
-%cmake -DUSE_QT5=ON ..
-make %{?_smp_mflags}
+%cmake ..
+%make_build
+make doc
 popd
 
 
 %install
-%make_install -C build-qt4
 %make_install -C build-qt5
 
+%ldconfig_scriptlets qt5
 
-%post qt4 -p /sbin/ldconfig
-
-%postun qt4 -p /sbin/ldconfig
-
-
-%post qt5 -p /sbin/ldconfig
-
-%postun qt5 -p /sbin/ldconfig
-
-
-%files qt4
-%license COPYING
-%{_libdir}/libqtspell-qt4.so.*
-%{_qt4_translationdir}/QtSpell_*.qm
-
-%files qt4-devel
-%{_includedir}/QtSpell-qt4/
-%{_libdir}/libqtspell-qt4.so
-%{_libdir}/pkgconfig/QtSpell-qt4.pc
 
 %files qt5
 %license COPYING
@@ -132,7 +89,7 @@ popd
 
 %files doc
 %license COPYING
-%doc build-qt4/doc/html
+%doc build-qt5/doc/html
 
 
 %changelog

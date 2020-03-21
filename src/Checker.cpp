@@ -71,11 +71,7 @@ bool checkLanguageInstalled(const QString &lang)
 }
 
 Checker::Checker(QObject* parent)
-	: QObject(parent),
-	  m_speller(0),
-	  m_decodeCodes(false),
-	  m_spellingCheckbox(false),
-	  m_spellingEnabled(true)
+	: QObject(parent)
 {
 	static TranslationsInit tsInit;
 	Q_UNUSED(tsInit);
@@ -101,7 +97,7 @@ bool Checker::setLanguage(const QString &lang)
 bool Checker::setLanguageInternal(const QString &lang)
 {
 	delete m_speller;
-	m_speller = 0;
+	m_speller = nullptr;
 	m_lang = lang;
 
 	// Determine language from system locale
@@ -204,7 +200,7 @@ void Checker::showContextMenu(QMenu* menu, const QPoint& pos, int wordPos)
 					QAction* action = new QAction(suggestions[i], menu);
 					action->setProperty("wordPos", wordPos);
 					action->setProperty("suggestion", suggestions[i]);
-					connect(action, SIGNAL(triggered()), this, SLOT(slotReplaceWord()));
+					connect(action, &QAction::triggered, this, &Checker::slotReplaceWord);
 					menu->insertAction(insertPos, action);
 				}
 				if(suggestions.length() > 10) {
@@ -213,7 +209,7 @@ void Checker::showContextMenu(QMenu* menu, const QPoint& pos, int wordPos)
 						QAction* action = new QAction(suggestions[i], moreMenu);
 						action->setProperty("wordPos", wordPos);
 						action->setProperty("suggestion", suggestions[i]);
-						connect(action, SIGNAL(triggered()), this, SLOT(slotReplaceWord()));
+						connect(action, &QAction::triggered, this, &Checker::slotReplaceWord);
 						moreMenu->addAction(action);
 					}
 					QAction* action = new QAction(tr("More..."), menu);
@@ -225,12 +221,12 @@ void Checker::showContextMenu(QMenu* menu, const QPoint& pos, int wordPos)
 
 			QAction* addAction = new QAction(tr("Add \"%1\" to dictionary").arg(word), menu);
 			addAction->setData(wordPos);
-			connect(addAction, SIGNAL(triggered()), this, SLOT(slotAddWord()));
+			connect(addAction, &QAction::triggered, this, &Checker::slotAddWord);
 			menu->insertAction(insertPos, addAction);
 
 			QAction* ignoreAction = new QAction(tr("Ignore \"%1\"").arg(word), menu);
 			ignoreAction->setData(wordPos);
-			connect(ignoreAction, SIGNAL(triggered()), this, SLOT(slotIgnoreWord()));
+			connect(ignoreAction, &QAction::triggered, this, &Checker::slotIgnoreWord);
 			menu->insertAction(insertPos, ignoreAction);
 			menu->insertSeparator(insertPos);
 		}
@@ -239,7 +235,7 @@ void Checker::showContextMenu(QMenu* menu, const QPoint& pos, int wordPos)
 		QAction* action = new QAction(tr("Check spelling"), menu);
 		action->setCheckable(true);
 		action->setChecked(m_spellingEnabled);
-		connect(action, SIGNAL(toggled(bool)), this, SLOT(setSpellingEnabled(bool)));
+		connect(action, &QAction::toggled, this, &Checker::setSpellingEnabled);
 		menu->insertAction(insertPos, action);
 	}
 	if(m_speller && m_spellingEnabled){
@@ -251,7 +247,7 @@ void Checker::showContextMenu(QMenu* menu, const QPoint& pos, int wordPos)
 			action->setData(lang);
 			action->setCheckable(true);
 			action->setChecked(lang == getLanguage());
-			connect(action, SIGNAL(triggered(bool)), this, SLOT(slotSetLanguage(bool)));
+			connect(action, &QAction::triggered, this, &Checker::slotSetLanguage);
 			languagesMenu->addAction(action);
 			actionGroup->addAction(action);
 		}

@@ -188,11 +188,11 @@ private slots:
 	void slotSetLanguage(bool checked);
 
 private:
-	enchant::Dict* m_speller;
+	enchant::Dict* m_speller = nullptr;
 	QString m_lang;
-	bool m_decodeCodes;
-	bool m_spellingCheckbox;
-	bool m_spellingEnabled;
+	bool m_decodeCodes = false;
+	bool m_spellingCheckbox = false;
+	bool m_spellingEnabled = true;
 
 	/**
 	 * @brief Get the word at the specified cursor position.
@@ -328,12 +328,12 @@ signals:
 	void redoAvailable(bool available);
 
 private:
-	TextEditProxy* m_textEdit;
-	QTextDocument* m_document;
-	UndoRedoStack* m_undoRedoStack;
-	bool m_undoRedoInProgress;
+	TextEditProxy* m_textEdit = nullptr;
+	QTextDocument* m_document = nullptr;
+	UndoRedoStack* m_undoRedoStack = nullptr;
+	bool m_undoRedoInProgress = false;
 	Qt::ContextMenuPolicy m_oldContextMenuPolicy;
-	int m_noSpellingProperty;
+	int m_noSpellingProperty = -1;
 
 	QString getWord(int pos, int* start = 0, int* end = 0) const;
 	void insertWord(int start, int end, const QString& word);

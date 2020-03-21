@@ -58,7 +58,7 @@ struct UndoRedoStack::UndoableDelete : public UndoRedoStack::Action {
 };
 
 UndoRedoStack::UndoRedoStack(TextEditProxy* textEdit)
-	: m_actionInProgress(false), m_textEdit(textEdit)
+	: m_textEdit(textEdit)
 {
 	// We need to keep undo/redo enabled to retreive the deleted text in onContentsChange...
 	if(m_textEdit){

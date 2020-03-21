@@ -5,7 +5,6 @@ Maintainer: Sandro Mani <manisandro@gmail.com>
 Build-Depends: debhelper (>= 9),
                cmake,
                libenchant-dev,
-               libqt4-dev,
                qtbase5-dev,
                qttools5-dev,
                qttools5-dev-tools,
@@ -14,25 +13,6 @@ Standards-Version: 3.9.4
 Vcs-Svn: https://github.com/manisandro/qtspell.git
 Vcs-Browser: https://github.com/manisandro/qtspell
 Homepage: https://github.com/manisandro/qtspell
-
-Package: libqtspell-qt4-0
-Section: libs
-Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, iso-codes
-Description: Spell checking for Qt4 text widgets
- QtSpell adds spell-checking functionality to Qt4's text widgets, using the
- enchant spell-checking library.
-
-Package: libqtspell-qt4-dev
-Section: libdevel
-Architecture: any
-Depends: libenchant-dev,
-         libqt4-dev,
-         libqtspell-qt4-0 (= ${binary:Version}),
-         ${misc:Depends}
-Description: Development files for libqtspell-qt4
- This package contains the headers and libraries for developing applications
- with qtspell-qt4 support.
 
 Package: libqtspell-qt5-0
 Section: libs

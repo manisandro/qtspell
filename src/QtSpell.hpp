@@ -44,6 +44,9 @@ namespace enchant { class Dict; }
  */
 namespace QtSpell {
 
+class CheckerPrivate;
+class TextEditCheckerPrivate;
+
 /**
  * @brief Check whether the dictionary for a language is installed
  */
@@ -217,6 +220,13 @@ private:
 	 */
 	virtual bool isAttached() const = 0;
 	bool setLanguageInternal(const QString& lang);
+
+protected:
+	Checker(CheckerPrivate& dd, QObject* parent = 0);
+	CheckerPrivate* d_ptr;
+
+private:
+	Q_DECLARE_PRIVATE(Checker)
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -347,6 +357,9 @@ private slots:
 	void slotCheckDocumentChanged();
 	void slotDetachTextEdit();
 	void slotCheckRange(int pos, int removed, int added);
+
+private:
+	Q_DECLARE_PRIVATE(TextEditChecker)
 };
 
 } // QtSpell

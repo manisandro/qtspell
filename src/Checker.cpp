@@ -17,6 +17,7 @@
  */
 
 #include "QtSpell.hpp"
+#include "Checker_p.hpp"
 #include "Codetable.hpp"
 
 #include <enchant++.h>
@@ -65,6 +66,24 @@ private:
 
 namespace QtSpell {
 
+CheckerPrivate::CheckerPrivate()
+{
+}
+
+CheckerPrivate::~CheckerPrivate()
+{
+}
+
+void CheckerPrivate::init()
+{
+	Q_Q(Checker);
+
+	static TranslationsInit tsInit;
+	Q_UNUSED(tsInit);
+
+	q->setLanguageInternal("");
+}
+
 bool checkLanguageInstalled(const QString &lang)
 {
 	return get_enchant_broker()->dict_exists(lang.toStdString());
@@ -72,17 +91,24 @@ bool checkLanguageInstalled(const QString &lang)
 
 Checker::Checker(QObject* parent)
 	: QObject(parent)
+	, d_ptr(new CheckerPrivate())
 {
-	static TranslationsInit tsInit;
-	Q_UNUSED(tsInit);
+	d_ptr->q_ptr = this;
+	d_ptr->init();
+}
 
-	// setLanguageInternal: setLanguage is virtual and cannot be called in the constructor
-	setLanguageInternal("");
+Checker::Checker(CheckerPrivate& dd, QObject* parent)
+	: QObject(parent)
+	, d_ptr(&dd)
+{
+	d_ptr->q_ptr = this;
+	d_ptr->init();
 }
 
 Checker::~Checker()
 {
 	delete m_speller;
+	delete d_ptr;
 }
 
 bool Checker::setLanguage(const QString &lang)

@@ -19,11 +19,25 @@
 #ifndef QTSPELL_TEXTEDITCHECKER_P_HPP
 #define QTSPELL_TEXTEDITCHECKER_P_HPP
 
+#include "QtSpell.hpp"
+#include "Checker_p.hpp"
+
 #include <QTextCursor>
 
 class QMenu;
 
 namespace QtSpell {
+
+class TextEditChecker;
+
+class TextEditCheckerPrivate : public CheckerPrivate
+{
+public:
+	TextEditCheckerPrivate();
+	virtual ~TextEditCheckerPrivate();
+
+	Q_DECLARE_PUBLIC(TextEditChecker)
+};
 
 /**
  * @brief An enhanced QTextCursor

@@ -27,6 +27,17 @@
 
 namespace QtSpell {
 
+TextEditCheckerPrivate::TextEditCheckerPrivate()
+	: CheckerPrivate()
+{
+}
+
+TextEditCheckerPrivate::~TextEditCheckerPrivate()
+{
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 QString TextCursor::nextChar(int num) const
 {
 	TextCursor testCursor(*this);
@@ -90,7 +101,7 @@ void TextCursor::moveWordEnd(MoveMode moveMode)
 ///////////////////////////////////////////////////////////////////////////////
 
 TextEditChecker::TextEditChecker(QObject* parent)
-	: Checker(parent)
+	: Checker(*new TextEditCheckerPrivate(), parent)
 {
 }
 

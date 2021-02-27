@@ -35,6 +35,7 @@ public:
 	virtual ~CheckerPrivate();
 
 	void init();
+	bool setLanguageInternal(const QString& newLang);
 
 	Checker* q_ptr = nullptr;
 	enchant::Dict* speller = nullptr;

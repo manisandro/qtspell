@@ -77,12 +77,10 @@ CheckerPrivate::~CheckerPrivate()
 
 void CheckerPrivate::init()
 {
-	Q_Q(Checker);
-
 	static TranslationsInit tsInit;
 	Q_UNUSED(tsInit);
 
-	q->setLanguageInternal("");
+	setLanguageInternal("");
 }
 
 bool checkLanguageInstalled(const QString &lang)
@@ -113,7 +111,8 @@ Checker::~Checker()
 
 bool Checker::setLanguage(const QString &lang)
 {
-	bool success = setLanguageInternal(lang);
+	Q_D(Checker);
+	bool success = d->setLanguageInternal(lang);
 	if(isAttached()){
 		checkSpelling();
 	}
@@ -126,29 +125,28 @@ QString Checker::getLanguage() const
 	return d->lang;
 }
 
-bool Checker::setLanguageInternal(const QString &lang)
+bool CheckerPrivate::setLanguageInternal(const QString &newLang)
 {
-	Q_D(Checker);
-	delete d->speller;
-	d->speller = nullptr;
-	d->lang = lang;
+	delete speller;
+	speller = nullptr;
+	lang = newLang;
 
 	// Determine language from system locale
-	if(d->lang.isEmpty()){
-		d->lang = QLocale::system().name();
-		if(d->lang.toLower() == "c" || d->lang.isEmpty()){
-			qWarning() << "Cannot use system locale " << d->lang;
-			d->lang = QString();
+	if(lang.isEmpty()){
+		lang = QLocale::system().name();
+		if(lang.toLower() == "c" || lang.isEmpty()){
+			qWarning() << "Cannot use system locale " << lang;
+			lang = QString();
 			return false;
 		}
 	}
 
 	// Request dictionary
 	try {
-		d->speller = get_enchant_broker()->request_dict(d->lang.toStdString());
+		speller = get_enchant_broker()->request_dict(lang.toStdString());
 	} catch(enchant::Exception& e) {
 		qWarning() << "Failed to load dictionary: " << e.what();
-		d->lang = QString();
+		lang = QString();
 		return false;
 	}
 

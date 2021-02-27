@@ -213,7 +213,6 @@ private:
 	 * @return Whether a widget is attached to the checker.
 	 */
 	virtual bool isAttached() const = 0;
-	bool setLanguageInternal(const QString& lang);
 
 protected:
 	Checker(CheckerPrivate& dd, QObject* parent = 0);

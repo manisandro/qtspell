@@ -19,11 +19,7 @@
 #ifndef QTSPELL_HPP
 #define QTSPELL_HPP
 
-#if defined(QTSPELL_LIBRARY)
-#  define QTSPELL_API Q_DECL_EXPORT
-#else
-#  define QTSPELL_API Q_DECL_IMPORT
-#endif
+#include "QtSpellExport.hpp"
 
 #include <QObject>
 

@@ -39,6 +39,9 @@ public:
 	TextEditCheckerPrivate();
 	virtual ~TextEditCheckerPrivate();
 
+	void setTextEdit(TextEditProxy* newTextEdit);
+	bool noSpellingPropertySet(const QTextCursor& cursor) const;
+
 	TextEditProxy* textEdit = nullptr;
 	QTextDocument* document = nullptr;
 	UndoRedoStack* undoRedoStack = nullptr;

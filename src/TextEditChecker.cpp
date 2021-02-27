@@ -107,32 +107,35 @@ TextEditChecker::TextEditChecker(QObject* parent)
 
 TextEditChecker::~TextEditChecker()
 {
-	setTextEdit(static_cast<TextEditProxy*>(nullptr));
+	Q_D(TextEditChecker);
+	d->setTextEdit(nullptr);
 }
 
 void TextEditChecker::setTextEdit(QTextEdit* textEdit)
 {
-	setTextEdit(textEdit ? new TextEditProxyT<QTextEdit>(textEdit) : static_cast<TextEditProxyT<QTextEdit>*>(nullptr));
+	Q_D(TextEditChecker);
+	d->setTextEdit(textEdit ? new TextEditProxyT<QTextEdit>(textEdit) : nullptr);
 }
 
 void TextEditChecker::setTextEdit(QPlainTextEdit* textEdit)
 {
-	setTextEdit(textEdit ? new TextEditProxyT<QPlainTextEdit>(textEdit) : static_cast<TextEditProxyT<QPlainTextEdit>*>(nullptr));
+	Q_D(TextEditChecker);
+	d->setTextEdit(textEdit ? new TextEditProxyT<QPlainTextEdit>(textEdit) : nullptr);
 }
 
-void TextEditChecker::setTextEdit(TextEditProxy *textEdit)
+void TextEditCheckerPrivate::setTextEdit(TextEditProxy *newTextEdit)
 {
-	Q_D(TextEditChecker);
-	if(d->textEdit){
-		disconnect(d->textEdit, &TextEditProxy::editDestroyed, this, &TextEditChecker::slotDetachTextEdit);
-		disconnect(d->textEdit, &TextEditProxy::textChanged, this, &TextEditChecker::slotCheckDocumentChanged);
-		disconnect(d->textEdit, &TextEditProxy::customContextMenuRequested, this, &TextEditChecker::slotShowContextMenu);
-		disconnect(d->textEdit->document(), &QTextDocument::contentsChange, this, &TextEditChecker::slotCheckRange);
-		d->textEdit->setContextMenuPolicy(d->oldContextMenuPolicy);
-		d->textEdit->removeEventFilter(this);
+	Q_Q(TextEditChecker);
+	if(textEdit){
+		QObject::disconnect(textEdit, &TextEditProxy::editDestroyed, q, &TextEditChecker::slotDetachTextEdit);
+		QObject::disconnect(textEdit, &TextEditProxy::textChanged, q, &TextEditChecker::slotCheckDocumentChanged);
+		QObject::disconnect(textEdit, &TextEditProxy::customContextMenuRequested, q, &TextEditChecker::slotShowContextMenu);
+		QObject::disconnect(textEdit->document(), &QTextDocument::contentsChange, q, &TextEditChecker::slotCheckRange);
+		textEdit->setContextMenuPolicy(oldContextMenuPolicy);
+		textEdit->removeEventFilter(q);
 
 		// Remove spelling format
-		QTextCursor cursor = d->textEdit->textCursor();
+		QTextCursor cursor = textEdit->textCursor();
 		cursor.movePosition(QTextCursor::Start);
 		cursor.movePosition(QTextCursor::End, QTextCursor::KeepAnchor);
 		QTextCharFormat fmt = cursor.charFormat();
@@ -142,22 +145,22 @@ void TextEditChecker::setTextEdit(TextEditProxy *textEdit)
 		fmt.setUnderlineStyle(defaultFormat.underlineStyle());
 		cursor.setCharFormat(fmt);
 	}
-	bool undoWasEnabled = d->undoRedoStack != nullptr;
-	setUndoRedoEnabled(false);
-	delete d->textEdit;
-	d->document = nullptr;
-	d->textEdit = textEdit;
-	if(d->textEdit){
-		d->document = d->textEdit->document();
-		connect(d->textEdit, &TextEditProxy::editDestroyed, this, &TextEditChecker::slotDetachTextEdit);
-		connect(d->textEdit, &TextEditProxy::textChanged, this, &TextEditChecker::slotCheckDocumentChanged);
-		connect(d->textEdit, &TextEditProxy::customContextMenuRequested, this, &TextEditChecker::slotShowContextMenu);
-		connect(d->textEdit->document(), &QTextDocument::contentsChange, this, &TextEditChecker::slotCheckRange);
-		d->oldContextMenuPolicy = d->textEdit->contextMenuPolicy();
-		setUndoRedoEnabled(undoWasEnabled);
-		d->textEdit->setContextMenuPolicy(Qt::CustomContextMenu);
-		d->textEdit->installEventFilter(this);
-		checkSpelling();
+	bool undoWasEnabled = undoRedoStack != nullptr;
+	q->setUndoRedoEnabled(false);
+	delete textEdit;
+	document = nullptr;
+	textEdit = newTextEdit;
+	if(textEdit){
+		document = textEdit->document();
+		QObject::connect(textEdit, &TextEditProxy::editDestroyed, q, &TextEditChecker::slotDetachTextEdit);
+		QObject::connect(textEdit, &TextEditProxy::textChanged, q, &TextEditChecker::slotCheckDocumentChanged);
+		QObject::connect(textEdit, &TextEditProxy::customContextMenuRequested, q, &TextEditChecker::slotShowContextMenu);
+		QObject::connect(textEdit->document(), &QTextDocument::contentsChange, q, &TextEditChecker::slotCheckRange);
+		oldContextMenuPolicy = textEdit->contextMenuPolicy();
+		q->setUndoRedoEnabled(undoWasEnabled);
+		textEdit->setContextMenuPolicy(Qt::CustomContextMenu);
+		textEdit->installEventFilter(q);
+		q->checkSpelling();
 	}
 }
 
@@ -215,7 +218,7 @@ void TextEditChecker::checkSpelling(int start, int end)
 		cursor.moveWordEnd(QTextCursor::KeepAnchor);
 		bool correct;
 		QString word = cursor.selectedText();
-		if(noSpellingPropertySet(cursor)) {
+		if(d->noSpellingPropertySet(cursor)) {
 			correct = true;
 			qDebug() << "Skipping word:" << word << "(" << cursor.anchor() << "-" << cursor.position() << ")";
 		} else {
@@ -241,19 +244,18 @@ void TextEditChecker::checkSpelling(int start, int end)
 	d->textEdit->document()->blockSignals(false);
 }
 
-bool TextEditChecker::noSpellingPropertySet(const QTextCursor &cursor) const
+bool TextEditCheckerPrivate::noSpellingPropertySet(const QTextCursor &cursor) const
 {
-	Q_D(const TextEditChecker);
-	if(d->noSpellingProperty < QTextFormat::UserProperty) {
+	if(noSpellingProperty < QTextFormat::UserProperty) {
 		return false;
 	}
-	if(cursor.charFormat().intProperty(d->noSpellingProperty) == 1) {
+	if(cursor.charFormat().intProperty(noSpellingProperty) == 1) {
 		return true;
 	}
 	const QVector<QTextLayout::FormatRange>& formats = cursor.block().layout()->formats();
 	int pos = cursor.positionInBlock();
 	foreach(const QTextLayout::FormatRange& range, formats) {
-		if(pos > range.start && pos <= range.start + range.length && range.format.intProperty(d->noSpellingProperty) == 1) {
+		if(pos > range.start && pos <= range.start + range.length && range.format.intProperty(noSpellingProperty) == 1) {
 			return true;
 		}
 	}

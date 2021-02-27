@@ -334,9 +334,7 @@ private:
 	QString getWord(int pos, int* start = 0, int* end = 0) const;
 	void insertWord(int start, int end, const QString& word);
 	bool isAttached() const;
-	void setTextEdit(TextEditProxy* textEdit);
 	bool eventFilter(QObject *obj, QEvent *event);
-	bool noSpellingPropertySet(const QTextCursor& cursor) const;
 
 private slots:
 	void slotShowContextMenu(const QPoint& pos);

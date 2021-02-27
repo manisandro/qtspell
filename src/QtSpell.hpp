@@ -26,18 +26,11 @@
 #endif
 
 #include <QObject>
-#include <QRegExp>
 
-class QLineEdit;
 class QMenu;
 class QPlainTextEdit;
 class QPoint;
-class QTextCursor;
-class QTextDocument;
 class QTextEdit;
-
-namespace enchant { class Dict; }
-
 
 /**
  * @brief QtSpell namespace
@@ -223,9 +216,6 @@ private:
 };
 
 ///////////////////////////////////////////////////////////////////////////////
-
-class TextEditProxy;
-class UndoRedoStack;
 
 /**
  * @brief Checker class for QTextEdit widgets.

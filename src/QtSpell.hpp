@@ -90,7 +90,7 @@ public:
 	 * @brief Retreive the current spelling language.
 	 * @return The current spelling language.
 	 */
-	const QString& getLanguage() const;
+	QString getLanguage() const;
 
 	/**
 	 * @brief Set whether to decode language codes in the UI.

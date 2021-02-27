@@ -120,7 +120,7 @@ bool Checker::setLanguage(const QString &lang)
 	return success;
 }
 
-const QString& Checker::getLanguage() const
+QString Checker::getLanguage() const
 {
 	return m_lang;
 }

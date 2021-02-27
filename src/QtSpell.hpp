@@ -332,13 +332,6 @@ signals:
 	void redoAvailable(bool available);
 
 private:
-	TextEditProxy* m_textEdit = nullptr;
-	QTextDocument* m_document = nullptr;
-	UndoRedoStack* m_undoRedoStack = nullptr;
-	bool m_undoRedoInProgress = false;
-	Qt::ContextMenuPolicy m_oldContextMenuPolicy;
-	int m_noSpellingProperty = -1;
-
 	QString getWord(int pos, int* start = 0, int* end = 0) const;
 	void insertWord(int start, int end, const QString& word);
 	bool isAttached() const;

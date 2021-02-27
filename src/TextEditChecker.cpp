@@ -122,16 +122,17 @@ void TextEditChecker::setTextEdit(QPlainTextEdit* textEdit)
 
 void TextEditChecker::setTextEdit(TextEditProxy *textEdit)
 {
-	if(m_textEdit){
-		disconnect(m_textEdit, &TextEditProxy::editDestroyed, this, &TextEditChecker::slotDetachTextEdit);
-		disconnect(m_textEdit, &TextEditProxy::textChanged, this, &TextEditChecker::slotCheckDocumentChanged);
-		disconnect(m_textEdit, &TextEditProxy::customContextMenuRequested, this, &TextEditChecker::slotShowContextMenu);
-		disconnect(m_textEdit->document(), &QTextDocument::contentsChange, this, &TextEditChecker::slotCheckRange);
-		m_textEdit->setContextMenuPolicy(m_oldContextMenuPolicy);
-		m_textEdit->removeEventFilter(this);
+	Q_D(TextEditChecker);
+	if(d->textEdit){
+		disconnect(d->textEdit, &TextEditProxy::editDestroyed, this, &TextEditChecker::slotDetachTextEdit);
+		disconnect(d->textEdit, &TextEditProxy::textChanged, this, &TextEditChecker::slotCheckDocumentChanged);
+		disconnect(d->textEdit, &TextEditProxy::customContextMenuRequested, this, &TextEditChecker::slotShowContextMenu);
+		disconnect(d->textEdit->document(), &QTextDocument::contentsChange, this, &TextEditChecker::slotCheckRange);
+		d->textEdit->setContextMenuPolicy(d->oldContextMenuPolicy);
+		d->textEdit->removeEventFilter(this);
 
 		// Remove spelling format
-		QTextCursor cursor = m_textEdit->textCursor();
+		QTextCursor cursor = d->textEdit->textCursor();
 		cursor.movePosition(QTextCursor::Start);
 		cursor.movePosition(QTextCursor::End, QTextCursor::KeepAnchor);
 		QTextCharFormat fmt = cursor.charFormat();
@@ -141,33 +142,35 @@ void TextEditChecker::setTextEdit(TextEditProxy *textEdit)
 		fmt.setUnderlineStyle(defaultFormat.underlineStyle());
 		cursor.setCharFormat(fmt);
 	}
-	bool undoWasEnabled = m_undoRedoStack != nullptr;
+	bool undoWasEnabled = d->undoRedoStack != nullptr;
 	setUndoRedoEnabled(false);
-	delete m_textEdit;
-	m_document = nullptr;
-	m_textEdit = textEdit;
-	if(m_textEdit){
-		m_document = m_textEdit->document();
-		connect(m_textEdit, &TextEditProxy::editDestroyed, this, &TextEditChecker::slotDetachTextEdit);
-		connect(m_textEdit, &TextEditProxy::textChanged, this, &TextEditChecker::slotCheckDocumentChanged);
-		connect(m_textEdit, &TextEditProxy::customContextMenuRequested, this, &TextEditChecker::slotShowContextMenu);
-		connect(m_textEdit->document(), &QTextDocument::contentsChange, this, &TextEditChecker::slotCheckRange);
-		m_oldContextMenuPolicy = m_textEdit->contextMenuPolicy();
+	delete d->textEdit;
+	d->document = nullptr;
+	d->textEdit = textEdit;
+	if(d->textEdit){
+		d->document = d->textEdit->document();
+		connect(d->textEdit, &TextEditProxy::editDestroyed, this, &TextEditChecker::slotDetachTextEdit);
+		connect(d->textEdit, &TextEditProxy::textChanged, this, &TextEditChecker::slotCheckDocumentChanged);
+		connect(d->textEdit, &TextEditProxy::customContextMenuRequested, this, &TextEditChecker::slotShowContextMenu);
+		connect(d->textEdit->document(), &QTextDocument::contentsChange, this, &TextEditChecker::slotCheckRange);
+		d->oldContextMenuPolicy = d->textEdit->contextMenuPolicy();
 		setUndoRedoEnabled(undoWasEnabled);
-		m_textEdit->setContextMenuPolicy(Qt::CustomContextMenu);
-		m_textEdit->installEventFilter(this);
+		d->textEdit->setContextMenuPolicy(Qt::CustomContextMenu);
+		d->textEdit->installEventFilter(this);
 		checkSpelling();
 	}
 }
 
 void TextEditChecker::setNoSpellingPropertyId(int propertyId)
 {
-	m_noSpellingProperty = propertyId;
+	Q_D(TextEditChecker);
+	d->noSpellingProperty = propertyId;
 }
 
 int TextEditChecker::noSpellingPropertyId() const
 {
-	return m_noSpellingProperty;
+	Q_D(const TextEditChecker);
+	return d->noSpellingProperty;
 }
 
 bool TextEditChecker::eventFilter(QObject* obj, QEvent* event)
@@ -187,14 +190,15 @@ bool TextEditChecker::eventFilter(QObject* obj, QEvent* event)
 
 void TextEditChecker::checkSpelling(int start, int end)
 {
+	Q_D(TextEditChecker);
 	if(end == -1){
-		QTextCursor tmpCursor(m_textEdit->textCursor());
+		QTextCursor tmpCursor(d->textEdit->textCursor());
 		tmpCursor.movePosition(QTextCursor::End);
 		end = tmpCursor.position();
 	}
 
 	// stop contentsChange signals from being emitted due to changed charFormats
-	m_textEdit->document()->blockSignals(true);
+	d->textEdit->document()->blockSignals(true);
 
 	qDebug() << "Checking range " << start << " - " << end;
 
@@ -204,7 +208,7 @@ void TextEditChecker::checkSpelling(int start, int end)
 	errorFmt.setUnderlineStyle(QTextCharFormat::WaveUnderline);
 	QTextCharFormat defaultFormat = QTextCharFormat();
 
-	TextCursor cursor(m_textEdit->textCursor());
+	TextCursor cursor(d->textEdit->textCursor());
 	cursor.beginEditBlock();
 	cursor.setPosition(start);
 	while(cursor.position() < end) {
@@ -234,21 +238,22 @@ void TextEditChecker::checkSpelling(int start, int end)
 	}
 	cursor.endEditBlock();
 
-	m_textEdit->document()->blockSignals(false);
+	d->textEdit->document()->blockSignals(false);
 }
 
 bool TextEditChecker::noSpellingPropertySet(const QTextCursor &cursor) const
 {
-	if(m_noSpellingProperty < QTextFormat::UserProperty) {
+	Q_D(const TextEditChecker);
+	if(d->noSpellingProperty < QTextFormat::UserProperty) {
 		return false;
 	}
-	if(cursor.charFormat().intProperty(m_noSpellingProperty) == 1) {
+	if(cursor.charFormat().intProperty(d->noSpellingProperty) == 1) {
 		return true;
 	}
 	const QVector<QTextLayout::FormatRange>& formats = cursor.block().layout()->formats();
 	int pos = cursor.positionInBlock();
 	foreach(const QTextLayout::FormatRange& range, formats) {
-		if(pos > range.start && pos <= range.start + range.length && range.format.intProperty(m_noSpellingProperty) == 1) {
+		if(pos > range.start && pos <= range.start + range.length && range.format.intProperty(d->noSpellingProperty) == 1) {
 			return true;
 		}
 	}
@@ -257,31 +262,34 @@ bool TextEditChecker::noSpellingPropertySet(const QTextCursor &cursor) const
 
 void TextEditChecker::clearUndoRedo()
 {
-	if(m_undoRedoStack){
-		m_undoRedoStack->clear();
+	Q_D(TextEditChecker);
+	if(d->undoRedoStack){
+		d->undoRedoStack->clear();
 	}
 }
 
 void TextEditChecker::setUndoRedoEnabled(bool enabled)
 {
-	if(enabled == (m_undoRedoStack != nullptr)){
+	Q_D(TextEditChecker);
+	if(enabled == (d->undoRedoStack != nullptr)){
 		return;
 	}
 	if(!enabled){
-		delete m_undoRedoStack;
-		m_undoRedoStack = nullptr;
+		delete d->undoRedoStack;
+		d->undoRedoStack = nullptr;
 		emit undoAvailable(false);
 		emit redoAvailable(false);
 	}else{
-		m_undoRedoStack = new UndoRedoStack(m_textEdit);
-		connect(m_undoRedoStack, &QtSpell::UndoRedoStack::undoAvailable, this, &TextEditChecker::undoAvailable);
-		connect(m_undoRedoStack, &QtSpell::UndoRedoStack::redoAvailable, this, &TextEditChecker::redoAvailable);
+		d->undoRedoStack = new UndoRedoStack(d->textEdit);
+		connect(d->undoRedoStack, &QtSpell::UndoRedoStack::undoAvailable, this, &TextEditChecker::undoAvailable);
+		connect(d->undoRedoStack, &QtSpell::UndoRedoStack::redoAvailable, this, &TextEditChecker::redoAvailable);
 	}
 }
 
 QString TextEditChecker::getWord(int pos, int* start, int* end) const
 {
-	TextCursor cursor(m_textEdit->textCursor());
+	Q_D(const TextEditChecker);
+	TextCursor cursor(d->textEdit->textCursor());
 	cursor.setPosition(pos);
 	cursor.moveWordStart();
 	cursor.moveWordEnd(QTextCursor::KeepAnchor);
@@ -294,7 +302,8 @@ QString TextEditChecker::getWord(int pos, int* start, int* end) const
 
 void TextEditChecker::insertWord(int start, int end, const QString &word)
 {
-	QTextCursor cursor(m_textEdit->textCursor());
+	Q_D(TextEditChecker);
+	QTextCursor cursor(d->textEdit->textCursor());
 	cursor.setPosition(start);
 	cursor.movePosition(QTextCursor::NextCharacter, QTextCursor::KeepAnchor, end - start);
 	cursor.insertText(word);
@@ -302,33 +311,36 @@ void TextEditChecker::insertWord(int start, int end, const QString &word)
 
 void TextEditChecker::slotShowContextMenu(const QPoint &pos)
 {
-	QPoint globalPos = m_textEdit->mapToGlobal(pos);
-	QMenu* menu = m_textEdit->createStandardContextMenu();
-	int wordPos = m_textEdit->cursorForPosition(pos).position();
+	Q_D(TextEditChecker);
+	QPoint globalPos = d->textEdit->mapToGlobal(pos);
+	QMenu* menu = d->textEdit->createStandardContextMenu();
+	int wordPos = d->textEdit->cursorForPosition(pos).position();
 	showContextMenu(menu, globalPos, wordPos);
 }
 
 void TextEditChecker::slotCheckDocumentChanged()
 {
-	if(m_document != m_textEdit->document()) {
-		bool undoWasEnabled = m_undoRedoStack != nullptr;
+	Q_D(TextEditChecker);
+	if(d->document != d->textEdit->document()) {
+		bool undoWasEnabled = d->undoRedoStack != nullptr;
 		setUndoRedoEnabled(false);
-		if(m_document){
-			disconnect(m_document, &QTextDocument::contentsChange, this, &TextEditChecker::slotCheckRange);
+		if(d->document){
+			disconnect(d->document, &QTextDocument::contentsChange, this, &TextEditChecker::slotCheckRange);
 		}
-		m_document = m_textEdit->document();
-		connect(m_document, &QTextDocument::contentsChange, this, &TextEditChecker::slotCheckRange);
+		d->document = d->textEdit->document();
+		connect(d->document, &QTextDocument::contentsChange, this, &TextEditChecker::slotCheckRange);
 		setUndoRedoEnabled(undoWasEnabled);
 	}
 }
 
 void TextEditChecker::slotDetachTextEdit()
 {
-	bool undoWasEnabled = m_undoRedoStack != nullptr;
+	Q_D(TextEditChecker);
+	bool undoWasEnabled = d->undoRedoStack != nullptr;
 	setUndoRedoEnabled(false);
-	delete m_textEdit;
-	m_textEdit = nullptr;
-	m_document = nullptr;
+	delete d->textEdit;
+	d->textEdit = nullptr;
+	d->document = nullptr;
 	if(undoWasEnabled){
 		// Crate dummy instance
 		setUndoRedoEnabled(true);
@@ -337,12 +349,13 @@ void TextEditChecker::slotDetachTextEdit()
 
 void TextEditChecker::slotCheckRange(int pos, int removed, int added)
 {
-	if(m_undoRedoStack != nullptr && !m_undoRedoInProgress){
-		m_undoRedoStack->handleContentsChange(pos, removed, added);
+	Q_D(TextEditChecker);
+	if(d->undoRedoStack != nullptr && !d->undoRedoInProgress){
+		d->undoRedoStack->handleContentsChange(pos, removed, added);
 	}
 
 	// Qt Bug? Apparently, when contents is pasted at pos = 0, added and removed are too large by 1
-	TextCursor c(m_textEdit->textCursor());
+	TextCursor c(d->textEdit->textCursor());
 	c.movePosition(QTextCursor::End);
 	int len = c.position();
 	if(pos == 0 && added > len){
@@ -367,27 +380,30 @@ void TextEditChecker::slotCheckRange(int pos, int removed, int added)
 
 void TextEditChecker::undo()
 {
-	if(m_undoRedoStack != nullptr){
-		m_undoRedoInProgress = true;
-		m_undoRedoStack->undo();
-		m_textEdit->ensureCursorVisible();
-		m_undoRedoInProgress = false;
+	Q_D(TextEditChecker);
+	if(d->undoRedoStack != nullptr){
+		d->undoRedoInProgress = true;
+		d->undoRedoStack->undo();
+		d->textEdit->ensureCursorVisible();
+		d->undoRedoInProgress = false;
 	}
 }
 
 void TextEditChecker::redo()
 {
-	if(m_undoRedoStack != nullptr){
-		m_undoRedoInProgress = true;
-		m_undoRedoStack->redo();
-		m_textEdit->ensureCursorVisible();
-		m_undoRedoInProgress = false;
+	Q_D(TextEditChecker);
+	if(d->undoRedoStack != nullptr){
+		d->undoRedoInProgress = true;
+		d->undoRedoStack->redo();
+		d->textEdit->ensureCursorVisible();
+		d->undoRedoInProgress = false;
 	}
 }
 
 bool TextEditChecker::isAttached() const
 {
-	return m_textEdit != 0;
+	Q_D(const TextEditChecker);
+	return d->textEdit != 0;
 }
 
 } // QtSpell

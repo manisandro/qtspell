@@ -25,16 +25,26 @@
 #include <QTextCursor>
 
 class QMenu;
+class QTextDocument;
 
 namespace QtSpell {
 
 class TextEditChecker;
+class TextEditProxy;
+class UndoRedoStack;
 
 class TextEditCheckerPrivate : public CheckerPrivate
 {
 public:
 	TextEditCheckerPrivate();
 	virtual ~TextEditCheckerPrivate();
+
+	TextEditProxy* textEdit = nullptr;
+	QTextDocument* document = nullptr;
+	UndoRedoStack* undoRedoStack = nullptr;
+	bool undoRedoInProgress = false;
+	Qt::ContextMenuPolicy oldContextMenuPolicy;
+	int noSpellingProperty = -1;
 
 	Q_DECLARE_PUBLIC(TextEditChecker)
 };

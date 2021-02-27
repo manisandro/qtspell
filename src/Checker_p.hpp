@@ -20,6 +20,10 @@
 #ifndef QTSPELL_CHECKER_P_HPP
 #define QTSPELL_CHECKER_P_HPP
 
+#include <QString>
+
+namespace enchant { class Dict; }
+
 namespace QtSpell {
 
 class Checker;
@@ -33,6 +37,11 @@ public:
 	void init();
 
 	Checker* q_ptr = nullptr;
+	enchant::Dict* speller = nullptr;
+	QString lang;
+	bool decodeCodes = false;
+	bool spellingCheckbox = false;
+	bool spellingEnabled = true;
 
 	Q_DECLARE_PUBLIC(Checker)
 };

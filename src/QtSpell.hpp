@@ -191,12 +191,6 @@ private slots:
 	void slotSetLanguage(bool checked);
 
 private:
-	enchant::Dict* m_speller = nullptr;
-	QString m_lang;
-	bool m_decodeCodes = false;
-	bool m_spellingCheckbox = false;
-	bool m_spellingEnabled = true;
-
 	/**
 	 * @brief Get the word at the specified cursor position.
 	 * @param pos The cursor position.

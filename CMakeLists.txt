@@ -8,8 +8,8 @@ SET(QTSPELL_VERSION 0.9.0)
 # Soname
 # MAJOR is incremented when symbols are removed or changed in an incompatible way
 # MINOR is incremented when new symbols are added
-SET(QTSPELL_MAJOR 0)
-SET(QTSPELL_MINOR 3)
+SET(QTSPELL_MAJOR 1)
+SET(QTSPELL_MINOR 0)
 
 
 # Variables

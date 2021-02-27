@@ -160,6 +160,16 @@ void TextEditChecker::setTextEdit(TextEditProxy *textEdit)
 	}
 }
 
+void TextEditChecker::setNoSpellingPropertyId(int propertyId)
+{
+	m_noSpellingProperty = propertyId;
+}
+
+int TextEditChecker::noSpellingPropertyId() const
+{
+	return m_noSpellingProperty;
+}
+
 bool TextEditChecker::eventFilter(QObject* obj, QEvent* event)
 {
 	if(event->type() == QEvent::KeyPress){
@@ -373,6 +383,11 @@ void TextEditChecker::redo()
 		m_textEdit->ensureCursorVisible();
 		m_undoRedoInProgress = false;
 	}
+}
+
+bool TextEditChecker::isAttached() const
+{
+	return m_textEdit != 0;
 }
 
 } // QtSpell

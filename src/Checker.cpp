@@ -120,6 +120,11 @@ bool Checker::setLanguage(const QString &lang)
 	return success;
 }
 
+const QString& Checker::getLanguage() const
+{
+	return m_lang;
+}
+
 bool Checker::setLanguageInternal(const QString &lang)
 {
 	delete m_speller;
@@ -146,6 +151,31 @@ bool Checker::setLanguageInternal(const QString &lang)
 	}
 
 	return true;
+}
+
+void Checker::setDecodeLanguageCodes(bool decode)
+{
+	m_decodeCodes = decode;
+}
+
+bool Checker::getDecodeLanguageCodes() const
+{
+	return m_decodeCodes;
+}
+
+void Checker::setShowCheckSpellingCheckbox(bool show)
+{
+	m_spellingCheckbox = show;
+}
+
+bool Checker::getShowCheckSpellingCheckbox() const
+{
+	return m_spellingCheckbox;
+}
+
+bool Checker::getSpellingEnabled() const
+{
+	return m_spellingEnabled;
 }
 
 void Checker::addWordToDictionary(const QString &word)
@@ -211,6 +241,12 @@ QString Checker::decodeLanguageCode(const QString &lang)
 	}else{
 		return language;
 	}
+}
+
+void Checker::setSpellingEnabled(bool enabled)
+{
+	m_spellingEnabled = enabled;
+	checkSpelling();
 }
 
 void Checker::showContextMenu(QMenu* menu, const QPoint& pos, int wordPos)

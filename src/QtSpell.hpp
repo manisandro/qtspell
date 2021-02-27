@@ -90,38 +90,38 @@ public:
 	 * @brief Retreive the current spelling language.
 	 * @return The current spelling language.
 	 */
-	const QString& getLanguage() const{ return m_lang; }
+	const QString& getLanguage() const;
 
 	/**
 	 * @brief Set whether to decode language codes in the UI.
 	 * @note Requres the iso-codes package.
 	 * @param decode Whether to decode the language codes.
 	 */
-	void setDecodeLanguageCodes(bool decode){ m_decodeCodes = decode; }
+	void setDecodeLanguageCodes(bool decode);
 
 	/**
 	 * @brief Return whether langauge codes are decoded in the UI.
 	 * @return Whether langauge codes are decoded in the UI.
 	 */
-	bool getDecodeLanguageCodes() const{ return m_decodeCodes; }
+	bool getDecodeLanguageCodes() const;
 
 	/**
 	 * @brief Set whether to display an "Check spelling" checkbox in the UI.
 	 * @param show Whether to display an "Check spelling" checkbox in the UI.
 	 */
-	void setShowCheckSpellingCheckbox(bool show) { m_spellingCheckbox = show; }
+	void setShowCheckSpellingCheckbox(bool show);
 
 	/**
 	 * @brief Return whether a "Check spelling" checkbox is displayed in the UI.
 	 * @return Whether a "Check spelling" checkbox is displayed in the UI.
 	 */
-	bool getShowCheckSpellingCheckbox() const{ return m_spellingCheckbox; }
+	bool getShowCheckSpellingCheckbox() const;
 
 	/**
 	 * @brief Return whether spellchecking is performed.
 	 * @return Whether spellchecking is performed.
 	 */
-	bool getSpellingEnabled() const{ return m_spellingEnabled; }
+	bool getSpellingEnabled() const;
 
 	/**
 	 * @brief Add the specified word to the user dictionary
@@ -171,7 +171,7 @@ public slots:
 	 * @brief Set whether spell checking should be performed.
 	 * @param enabled True if spell checking should be performed.
 	 */
-	void setSpellingEnabled(bool enabled) { m_spellingEnabled = enabled; checkSpelling(); }
+	void setSpellingEnabled(bool enabled);
 
 signals:
 	/**
@@ -273,14 +273,14 @@ public:
 	 *       is skipped. To work correctly, this property needs to be set for
 	 *       the entire word.
 	 */
-	void setNoSpellingPropertyId(int propertyId){ m_noSpellingProperty = propertyId; }
+	void setNoSpellingPropertyId(int propertyId);
 
 	/**
 	 * @brief Returns the current QTextCharFormat property identifier which
 	 *        marks whether a word ought to be spell-checked.
 	 * @return The no-spelling QTextCharFormat property identifier.
 	 */
-	int noSpellingPropertyId() const{ return m_noSpellingProperty; }
+	int noSpellingPropertyId() const;
 
 	void checkSpelling(int start = 0, int end = -1);
 
@@ -347,7 +347,7 @@ private:
 
 	QString getWord(int pos, int* start = 0, int* end = 0) const;
 	void insertWord(int start, int end, const QString& word);
-	bool isAttached() const{ return m_textEdit != 0; }
+	bool isAttached() const;
 	void setTextEdit(TextEditProxy* textEdit);
 	bool eventFilter(QObject *obj, QEvent *event);
 	bool noSpellingPropertySet(const QTextCursor& cursor) const;

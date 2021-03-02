@@ -19,30 +19,22 @@
 #ifndef QTSPELL_HPP
 #define QTSPELL_HPP
 
-#if defined(QTSPELL_LIBRARY)
-#  define QTSPELL_API Q_DECL_EXPORT
-#else
-#  define QTSPELL_API Q_DECL_IMPORT
-#endif
+#include "QtSpellExport.hpp"
 
 #include <QObject>
-#include <QRegExp>
 
-class QLineEdit;
 class QMenu;
 class QPlainTextEdit;
 class QPoint;
-class QTextCursor;
-class QTextDocument;
 class QTextEdit;
-
-namespace enchant { class Dict; }
-
 
 /**
  * @brief QtSpell namespace
  */
 namespace QtSpell {
+
+class CheckerPrivate;
+class TextEditCheckerPrivate;
 
 /**
  * @brief Check whether the dictionary for a language is installed
@@ -87,38 +79,38 @@ public:
 	 * @brief Retreive the current spelling language.
 	 * @return The current spelling language.
 	 */
-	const QString& getLanguage() const{ return m_lang; }
+	QString getLanguage() const;
 
 	/**
 	 * @brief Set whether to decode language codes in the UI.
 	 * @note Requres the iso-codes package.
 	 * @param decode Whether to decode the language codes.
 	 */
-	void setDecodeLanguageCodes(bool decode){ m_decodeCodes = decode; }
+	void setDecodeLanguageCodes(bool decode);
 
 	/**
 	 * @brief Return whether langauge codes are decoded in the UI.
 	 * @return Whether langauge codes are decoded in the UI.
 	 */
-	bool getDecodeLanguageCodes() const{ return m_decodeCodes; }
+	bool getDecodeLanguageCodes() const;
 
 	/**
 	 * @brief Set whether to display an "Check spelling" checkbox in the UI.
 	 * @param show Whether to display an "Check spelling" checkbox in the UI.
 	 */
-	void setShowCheckSpellingCheckbox(bool show) { m_spellingCheckbox = show; }
+	void setShowCheckSpellingCheckbox(bool show);
 
 	/**
 	 * @brief Return whether a "Check spelling" checkbox is displayed in the UI.
 	 * @return Whether a "Check spelling" checkbox is displayed in the UI.
 	 */
-	bool getShowCheckSpellingCheckbox() const{ return m_spellingCheckbox; }
+	bool getShowCheckSpellingCheckbox() const;
 
 	/**
 	 * @brief Return whether spellchecking is performed.
 	 * @return Whether spellchecking is performed.
 	 */
-	bool getSpellingEnabled() const{ return m_spellingEnabled; }
+	bool getSpellingEnabled() const;
 
 	/**
 	 * @brief Add the specified word to the user dictionary
@@ -168,7 +160,7 @@ public slots:
 	 * @brief Set whether spell checking should be performed.
 	 * @param enabled True if spell checking should be performed.
 	 */
-	void setSpellingEnabled(bool enabled) { m_spellingEnabled = enabled; checkSpelling(); }
+	void setSpellingEnabled(bool enabled);
 
 signals:
 	/**
@@ -188,12 +180,6 @@ private slots:
 	void slotSetLanguage(bool checked);
 
 private:
-	enchant::Dict* m_speller = nullptr;
-	QString m_lang;
-	bool m_decodeCodes = false;
-	bool m_spellingCheckbox = false;
-	bool m_spellingEnabled = true;
-
 	/**
 	 * @brief Get the word at the specified cursor position.
 	 * @param pos The cursor position.
@@ -216,13 +202,16 @@ private:
 	 * @return Whether a widget is attached to the checker.
 	 */
 	virtual bool isAttached() const = 0;
-	bool setLanguageInternal(const QString& lang);
+
+protected:
+	Checker(CheckerPrivate& dd, QObject* parent = 0);
+	CheckerPrivate* d_ptr;
+
+private:
+	Q_DECLARE_PRIVATE(Checker)
 };
 
 ///////////////////////////////////////////////////////////////////////////////
-
-class TextEditProxy;
-class UndoRedoStack;
 
 /**
  * @brief Checker class for QTextEdit widgets.
@@ -263,14 +252,14 @@ public:
 	 *       is skipped. To work correctly, this property needs to be set for
 	 *       the entire word.
 	 */
-	void setNoSpellingPropertyId(int propertyId){ m_noSpellingProperty = propertyId; }
+	void setNoSpellingPropertyId(int propertyId);
 
 	/**
 	 * @brief Returns the current QTextCharFormat property identifier which
 	 *        marks whether a word ought to be spell-checked.
 	 * @return The no-spelling QTextCharFormat property identifier.
 	 */
-	int noSpellingPropertyId() const{ return m_noSpellingProperty; }
+	int noSpellingPropertyId() const;
 
 	void checkSpelling(int start = 0, int end = -1);
 
@@ -328,25 +317,19 @@ signals:
 	void redoAvailable(bool available);
 
 private:
-	TextEditProxy* m_textEdit = nullptr;
-	QTextDocument* m_document = nullptr;
-	UndoRedoStack* m_undoRedoStack = nullptr;
-	bool m_undoRedoInProgress = false;
-	Qt::ContextMenuPolicy m_oldContextMenuPolicy;
-	int m_noSpellingProperty = -1;
-
 	QString getWord(int pos, int* start = 0, int* end = 0) const;
 	void insertWord(int start, int end, const QString& word);
-	bool isAttached() const{ return m_textEdit != 0; }
-	void setTextEdit(TextEditProxy* textEdit);
+	bool isAttached() const;
 	bool eventFilter(QObject *obj, QEvent *event);
-	bool noSpellingPropertySet(const QTextCursor& cursor) const;
 
 private slots:
 	void slotShowContextMenu(const QPoint& pos);
 	void slotCheckDocumentChanged();
 	void slotDetachTextEdit();
 	void slotCheckRange(int pos, int removed, int added);
+
+private:
+	Q_DECLARE_PRIVATE(TextEditChecker)
 };
 
 } // QtSpell

@@ -19,11 +19,38 @@
 #ifndef QTSPELL_TEXTEDITCHECKER_P_HPP
 #define QTSPELL_TEXTEDITCHECKER_P_HPP
 
+#include "QtSpell.hpp"
+#include "Checker_p.hpp"
+
 #include <QTextCursor>
 
 class QMenu;
+class QTextDocument;
 
 namespace QtSpell {
+
+class TextEditChecker;
+class TextEditProxy;
+class UndoRedoStack;
+
+class TextEditCheckerPrivate : public CheckerPrivate
+{
+public:
+	TextEditCheckerPrivate();
+	virtual ~TextEditCheckerPrivate();
+
+	void setTextEdit(TextEditProxy* newTextEdit);
+	bool noSpellingPropertySet(const QTextCursor& cursor) const;
+
+	TextEditProxy* textEdit = nullptr;
+	QTextDocument* document = nullptr;
+	UndoRedoStack* undoRedoStack = nullptr;
+	bool undoRedoInProgress = false;
+	Qt::ContextMenuPolicy oldContextMenuPolicy;
+	int noSpellingProperty = -1;
+
+	Q_DECLARE_PUBLIC(TextEditChecker)
+};
 
 /**
  * @brief An enhanced QTextCursor

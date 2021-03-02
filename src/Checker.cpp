@@ -17,6 +17,7 @@
  */
 
 #include "QtSpell.hpp"
+#include "Checker_p.hpp"
 #include "Codetable.hpp"
 
 #include <enchant++.h>
@@ -65,6 +66,23 @@ private:
 
 namespace QtSpell {
 
+CheckerPrivate::CheckerPrivate()
+{
+}
+
+CheckerPrivate::~CheckerPrivate()
+{
+	delete speller;
+}
+
+void CheckerPrivate::init()
+{
+	static TranslationsInit tsInit;
+	Q_UNUSED(tsInit);
+
+	setLanguageInternal("");
+}
+
 bool checkLanguageInstalled(const QString &lang)
 {
 	return get_enchant_broker()->dict_exists(lang.toStdString());
@@ -72,66 +90,111 @@ bool checkLanguageInstalled(const QString &lang)
 
 Checker::Checker(QObject* parent)
 	: QObject(parent)
+	, d_ptr(new CheckerPrivate())
 {
-	static TranslationsInit tsInit;
-	Q_UNUSED(tsInit);
+	d_ptr->q_ptr = this;
+	d_ptr->init();
+}
 
-	// setLanguageInternal: setLanguage is virtual and cannot be called in the constructor
-	setLanguageInternal("");
+Checker::Checker(CheckerPrivate& dd, QObject* parent)
+	: QObject(parent)
+	, d_ptr(&dd)
+{
+	d_ptr->q_ptr = this;
+	d_ptr->init();
 }
 
 Checker::~Checker()
 {
-	delete m_speller;
+	delete d_ptr;
 }
 
 bool Checker::setLanguage(const QString &lang)
 {
-	bool success = setLanguageInternal(lang);
+	Q_D(Checker);
+	bool success = d->setLanguageInternal(lang);
 	if(isAttached()){
 		checkSpelling();
 	}
 	return success;
 }
 
-bool Checker::setLanguageInternal(const QString &lang)
+QString Checker::getLanguage() const
 {
-	delete m_speller;
-	m_speller = nullptr;
-	m_lang = lang;
+	Q_D(const Checker);
+	return d->lang;
+}
+
+bool CheckerPrivate::setLanguageInternal(const QString &newLang)
+{
+	delete speller;
+	speller = nullptr;
+	lang = newLang;
 
 	// Determine language from system locale
-	if(m_lang.isEmpty()){
-		m_lang = QLocale::system().name();
-		if(m_lang.toLower() == "c" || m_lang.isEmpty()){
-			qWarning() << "Cannot use system locale " << m_lang;
-			m_lang = QString();
+	if(lang.isEmpty()){
+		lang = QLocale::system().name();
+		if(lang.toLower() == "c" || lang.isEmpty()){
+			qWarning() << "Cannot use system locale " << lang;
+			lang = QString();
 			return false;
 		}
 	}
 
 	// Request dictionary
 	try {
-		m_speller = get_enchant_broker()->request_dict(m_lang.toStdString());
+		speller = get_enchant_broker()->request_dict(lang.toStdString());
 	} catch(enchant::Exception& e) {
 		qWarning() << "Failed to load dictionary: " << e.what();
-		m_lang = QString();
+		lang = QString();
 		return false;
 	}
 
 	return true;
 }
 
+void Checker::setDecodeLanguageCodes(bool decode)
+{
+	Q_D(Checker);
+	d->decodeCodes = decode;
+}
+
+bool Checker::getDecodeLanguageCodes() const
+{
+	Q_D(const Checker);
+	return d->decodeCodes;
+}
+
+void Checker::setShowCheckSpellingCheckbox(bool show)
+{
+	Q_D(Checker);
+	d->spellingCheckbox = show;
+}
+
+bool Checker::getShowCheckSpellingCheckbox() const
+{
+	Q_D(const Checker);
+	return d->spellingCheckbox;
+}
+
+bool Checker::getSpellingEnabled() const
+{
+	Q_D(const Checker);
+	return d->spellingEnabled;
+}
+
 void Checker::addWordToDictionary(const QString &word)
 {
-	if(m_speller){
-		m_speller->add(word.toUtf8().data());
+	Q_D(Checker);
+	if(d->speller){
+		d->speller->add(word.toUtf8().data());
 	}
 }
 
 bool Checker::checkWord(const QString &word) const
 {
-	if(!m_speller || !m_spellingEnabled){
+	Q_D(const Checker);
+	if(!d->speller || !d->spellingEnabled){
 		return true;
 	}
 	// Skip empty strings and single characters
@@ -139,7 +202,7 @@ bool Checker::checkWord(const QString &word) const
 		return true;
 	}
 	try{
-		return m_speller->check(word.toUtf8().data());
+		return d->speller->check(word.toUtf8().data());
 	}catch(const enchant::Exception&){
 		return true;
 	}
@@ -147,15 +210,17 @@ bool Checker::checkWord(const QString &word) const
 
 void Checker::ignoreWord(const QString &word) const
 {
-	m_speller->add_to_session(word.toUtf8().data());
+	Q_D(const Checker);
+	d->speller->add_to_session(word.toUtf8().data());
 }
 
 QList<QString> Checker::getSpellingSuggestions(const QString& word) const
 {
+	Q_D(const Checker);
 	QList<QString> list;
-	if(m_speller){
+	if(d->speller){
 		std::vector<std::string> suggestions;
-		m_speller->suggest(word.toUtf8().data(), suggestions);
+		d->speller->suggest(word.toUtf8().data(), suggestions);
 		for(std::size_t i = 0, n = suggestions.size(); i < n; ++i){
 			list.append(QString::fromUtf8(suggestions[i].c_str()));
 		}
@@ -187,10 +252,18 @@ QString Checker::decodeLanguageCode(const QString &lang)
 	}
 }
 
+void Checker::setSpellingEnabled(bool enabled)
+{
+	Q_D(Checker);
+	d->spellingEnabled = enabled;
+	checkSpelling();
+}
+
 void Checker::showContextMenu(QMenu* menu, const QPoint& pos, int wordPos)
 {
+	Q_D(Checker);
 	QAction* insertPos = menu->actions().first();
-	if(m_speller && m_spellingEnabled){
+	if(d->speller && d->spellingEnabled){
 		QString word = getWord(wordPos);
 
 		if(!checkWord(word)) {
@@ -231,14 +304,14 @@ void Checker::showContextMenu(QMenu* menu, const QPoint& pos, int wordPos)
 			menu->insertSeparator(insertPos);
 		}
 	}
-	if(m_spellingCheckbox){
+	if(d->spellingCheckbox){
 		QAction* action = new QAction(tr("Check spelling"), menu);
 		action->setCheckable(true);
-		action->setChecked(m_spellingEnabled);
+		action->setChecked(d->spellingEnabled);
 		connect(action, &QAction::toggled, this, &Checker::setSpellingEnabled);
 		menu->insertAction(insertPos, action);
 	}
-	if(m_speller && m_spellingEnabled){
+	if(d->speller && d->spellingEnabled){
 		QMenu* languagesMenu = new QMenu();
 		QActionGroup* actionGroup = new QActionGroup(languagesMenu);
 		foreach(const QString& lang, getLanguageList()){

@@ -201,6 +201,9 @@ bool TextEditChecker::eventFilter(QObject* obj, QEvent* event)
 void TextEditChecker::checkSpelling(int start, int end)
 {
 	Q_D(TextEditChecker);
+	if (!d->textEdit) {
+		return;
+	}
 	if(end == -1){
 		QTextCursor tmpCursor(d->textEdit->textCursor());
 		tmpCursor.movePosition(QTextCursor::End);

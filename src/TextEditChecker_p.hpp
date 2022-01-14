@@ -22,6 +22,7 @@
 #include "QtSpell.hpp"
 #include "Checker_p.hpp"
 
+#include <QRegularExpression>
 #include <QTextCursor>
 
 class QMenu;
@@ -59,13 +60,13 @@ class TextCursor : public QTextCursor
 {
 public:
 	TextCursor()
-		: QTextCursor(), m_wordRegEx(QRegExp("^\\w$")) {}
+		: QTextCursor(), m_wordRegEx(QRegularExpression("^\\w$")) {}
 	TextCursor(QTextDocument* document)
-		: QTextCursor(document), m_wordRegEx(QRegExp("^\\w$")) {}
+		: QTextCursor(document), m_wordRegEx(QRegularExpression("^\\w$")) {}
 	TextCursor(const QTextBlock& block)
-		: QTextCursor(block), m_wordRegEx(QRegExp("^\\w$")) {}
+		: QTextCursor(block), m_wordRegEx(QRegularExpression("^\\w$")) {}
 	TextCursor(const QTextCursor& cursor)
-		: QTextCursor(cursor), m_wordRegEx(QRegExp("^\\w$")) {}
+		: QTextCursor(cursor), m_wordRegEx(QRegularExpression("^\\w$")) {}
 
 	/**
 	 * @brief Retreive the num-th next character.
@@ -112,7 +113,7 @@ public:
 	}
 
 private:
-	QRegExp m_wordRegEx;
+	QRegularExpression m_wordRegEx;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

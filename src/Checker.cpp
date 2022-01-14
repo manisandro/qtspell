@@ -21,6 +21,7 @@
 #include "Codetable.hpp"
 
 #include <enchant++.h>
+#include <QActionGroup>
 #include <QApplication>
 #include <QLibraryInfo>
 #include <QLocale>
@@ -51,12 +52,21 @@ static enchant::Broker* get_enchant_broker() {
 class TranslationsInit {
 public:
 	TranslationsInit(){
-		QString translationsPath = QLibraryInfo::location(QLibraryInfo::TranslationsPath);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+		QString translationsPath = QLibraryInfo::path(QLibraryInfo::TranslationsPath);
+#else
+                QString translationsPath = QLibraryInfo::location(QLibraryInfo::TranslationsPath);
+#endif
 #ifdef Q_OS_WIN
 		QDir packageDir = QDir(QString("%1/../").arg(QApplication::applicationDirPath()));
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+                translationsPath = packageDir.absolutePath() + translationsPath.mid(QLibraryInfo::path(QLibraryInfo::PrefixPath).length());
+#else
 		translationsPath = packageDir.absolutePath() + translationsPath.mid(QLibraryInfo::location(QLibraryInfo::PrefixPath).length());
 #endif
-		spellTranslator.load("QtSpell_" + QLocale::system().name(), translationsPath);
+#endif
+		bool success = spellTranslator.load("QtSpell_" + QLocale::system().name(), translationsPath);
+                Q_UNUSED(success)
 		QApplication::instance()->installTranslator(&spellTranslator);
 	}
 private:

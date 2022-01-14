@@ -74,7 +74,7 @@ Codetable::Codetable()
 
 void Codetable::parseIso639Elements(const QXmlStreamReader &xml, QMap<QString, QString> &table)
 {
-	if(xml.name() == "iso_639_entry" ){
+	if(xml.name() == QStringLiteral("iso_639_entry") ){
 		QString name = xml.attributes().value("name").toString();
 		QString code = xml.attributes().value("iso_639_1_code").toString();
 		if(!name.isEmpty() && !code.isEmpty()){
@@ -86,7 +86,7 @@ void Codetable::parseIso639Elements(const QXmlStreamReader &xml, QMap<QString, Q
 
 void Codetable::parseIso3166Elements(const QXmlStreamReader &xml, QMap<QString, QString> &table)
 {
-	if(xml.name() == "iso_3166_entry" ){
+	if(xml.name() == QStringLiteral("iso_3166_entry") ){
 		QString name = xml.attributes().value("name").toString();
 		QString code = xml.attributes().value("alpha_2_code").toString();
 		if(!name.isEmpty() && !code.isEmpty()){

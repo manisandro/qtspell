@@ -27,7 +27,12 @@ int main (int argc, char* argv[])
 	QApplication app(argc, argv);
 
 	QTranslator qtTranslator;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+        bool result = qtTranslator.load("qt_" + QLocale::system().name(), QLibraryInfo::path(QLibraryInfo::TranslationsPath));
+        Q_UNUSED(result)
+#else
 	qtTranslator.load("qt_" + QLocale::system().name(), QLibraryInfo::location(QLibraryInfo::TranslationsPath));
+#endif
 	QApplication::instance()->installTranslator(&qtTranslator);
 
 	MainWindow window;

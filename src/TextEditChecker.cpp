@@ -151,6 +151,7 @@ void TextEditCheckerPrivate::setTextEdit(TextEditProxy *newTextEdit)
 	document = nullptr;
 	textEdit = newTextEdit;
 	if(textEdit){
+		bool wasModified = textEdit->document()->isModified();
 		document = textEdit->document();
 		QObject::connect(textEdit, &TextEditProxy::editDestroyed, q, &TextEditChecker::slotDetachTextEdit);
 		QObject::connect(textEdit, &TextEditProxy::textChanged, q, &TextEditChecker::slotCheckDocumentChanged);
@@ -161,6 +162,12 @@ void TextEditCheckerPrivate::setTextEdit(TextEditProxy *newTextEdit)
 		textEdit->setContextMenuPolicy(Qt::CustomContextMenu);
 		textEdit->installEventFilter(q);
 		q->checkSpelling();
+		textEdit->document()->setModified(wasModified);
+        } else {
+                if(undoWasEnabled){
+                        // Crate dummy instance
+                        q->setUndoRedoEnabled(true);
+                }
 	}
 }
 

@@ -1,5 +1,5 @@
 /* QtSpell - Spell checking for Qt text widgets.
- * Copyright (c) 2014 Sandro Mani
+ * Copyright (c) 2014-2022 Sandro Mani
  * Copyright (c) 2021 Pino Toscano
  *
  *    This program is free software; you can redistribute it and/or modify

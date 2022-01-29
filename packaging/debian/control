@@ -4,7 +4,7 @@ Priority: optional
 Maintainer: Sandro Mani <manisandro@gmail.com>
 Build-Depends: debhelper (>= 9),
                cmake,
-               libenchant-dev,
+               libenchant-2-dev,
                qtbase5-dev,
                qttools5-dev,
                qttools5-dev-tools,
@@ -25,7 +25,7 @@ Description: Spell checking for Qt5 text widgets
 Package: libqtspell-qt5-dev
 Section: libdevel
 Architecture: any
-Depends: libenchant-dev,
+Depends: libenchant-2-dev,
          qtbase5-dev,
          libqtspell-qt5-0 (= ${binary:Version}),
          ${misc:Depends}

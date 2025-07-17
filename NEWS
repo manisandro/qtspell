@@ -1,3 +1,7 @@
+qtspell 1.0.2 (Jul 17 2025):
+* CMake: Raise required version to 3.5
+* CMake: Use GNUInstallDirs
+
 qtspell 1.0.1 (Jan 14 2022):
 * Fix broken pkg-config file
 
